@@ -6,15 +6,8 @@
         init() {
             this.elements = {
                 // 设置相关
-                settingsModal: document.getElementById('settingsModal'),
                 settingsBtn: document.getElementById('settingsBtn'),
-                settingsOverlay: document.getElementById('settingsOverlay'),
-                settingsCloseBtn: document.getElementById('settingsCloseBtn'),
-                themeDarkBtn: document.getElementById('themeDarkBtn'),
-                themeLightBtn: document.getElementById('themeLightBtn'),
-                langSCBtn: document.getElementById('langSCBtn'),
-                langTCBtn: document.getElementById('langTCBtn'),
-                langENBtn: document.getElementById('langENBtn'),
+                languageToggleBtn: document.getElementById('languageToggleBtn'),
 
                 // 计时器相关
                 timerDisplay: document.getElementById('timerDisplay'),
@@ -89,7 +82,7 @@
         if (headerTitle) headerTitle.textContent = t('headerTitle');
 
         // 更新设置按钮
-        if (cache.settingsBtn) cache.settingsBtn.title = t('settings');
+        updateQuickSettingsButtons();
 
         // 更新魔方类型选择器
         if (cache.cubeTypeSelect) {
@@ -102,15 +95,24 @@
         }
 
         // 更新上一条/下一条按钮
-        if (cache.prevScrambleBtn) cache.prevScrambleBtn.textContent = t('prevScramble');
-        if (cache.nextScrambleBtn) cache.nextScrambleBtn.textContent = t('nextScramble');
+        if (cache.prevScrambleBtn) {
+            cache.prevScrambleBtn.title = t('prevScramble');
+            cache.prevScrambleBtn.setAttribute('aria-label', t('prevScramble'));
+        }
+        if (cache.nextScrambleBtn) {
+            cache.nextScrambleBtn.title = t('nextScramble');
+            cache.nextScrambleBtn.setAttribute('aria-label', t('nextScramble'));
+        }
 
         // 更新循环次数
         if (cache.cycleSelect) {
             }
 
         // 更新复制按钮
-        if (cache.copyBtn) cache.copyBtn.textContent = t('copy');
+        if (cache.copyBtn) {
+            cache.copyBtn.title = t('copy');
+            cache.copyBtn.setAttribute('aria-label', t('copy'));
+        }
 
         // 更新坐标按钮
         if (cache.coordinateBtn) cache.coordinateBtn.textContent = t('coordinate');
@@ -125,8 +127,8 @@
         const historyTitle = document.querySelector('.history-times-title span');
         if (historyTitle) historyTitle.textContent = t('history');
         if (cache.historyResetBtn) {
-            cache.historyResetBtn.textContent = t('reset');
             cache.historyResetBtn.title = t('clearData');
+            cache.historyResetBtn.setAttribute('aria-label', t('clearData'));
         }
         if (cache.exportBestAo5Btn) cache.exportBestAo5Btn.textContent = t('exportAll');
 
@@ -203,92 +205,71 @@
         updateAllText();
     }
 
-    // 更新设置弹窗中的文本
-    function updateSettingsModalText() {
-        document.getElementById('settingsTitle').textContent = t('settings');
-        document.getElementById('themeTitle').textContent = t('theme');
-        document.getElementById('languageTitle').textContent = t('language');
-        document.getElementById('darkThemeText').textContent = t('darkTheme');
-        document.getElementById('lightThemeText').textContent = t('lightTheme');
-        document.getElementById('langSCText').textContent = t('languageSC');
-        document.getElementById('langTCText').textContent = t('languageTC');
-        document.getElementById('langENText').textContent = t('languageEN');
-        
-        // 更新当前选中的主题和语言
+    function updateLogoForTheme(theme) {
+        const logo = document.querySelector('.header-logo');
+        if (!logo) return;
+
+        logo.src = theme === 'dark'
+            ? './pictures/diansheng-white.png'
+            : './pictures/diansheng.png';
+    }
+
+    function updateQuickSettingsButtons() {
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        document.querySelectorAll('.theme-option-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.theme === currentTheme);
-        });
-        
-        document.querySelectorAll('.lang-option-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lang === currentLanguage);
-        });
-    }
+        const themeBtn = document.getElementById('settingsBtn');
+        const languageBtn = document.getElementById('languageToggleBtn');
 
-    // 显示设置弹窗
-    function showSettingsModal() {
-        const modal = document.getElementById('settingsModal');
-        if (modal) {
-            modal.classList.add('active');
-            updateSettingsModalText();
+        if (themeBtn) {
+            const icon = themeBtn.querySelector('i');
+            if (icon) {
+                icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+            themeBtn.title = currentTheme === 'dark' ? t('switchToLight') : t('switchToDark');
+            themeBtn.setAttribute('aria-label', themeBtn.title);
+        }
+
+        if (languageBtn) {
+            languageBtn.title = t('language');
+            languageBtn.setAttribute('aria-label', t('language'));
         }
     }
 
-    // 隐藏设置弹窗
-    function hideSettingsModal() {
-        const modal = document.getElementById('settingsModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
+    function toggleThemeDirectly() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        setTheme(currentTheme === 'dark' ? 'light' : 'dark');
     }
 
-    // 初始化设置弹窗事件
+    function toggleLanguageDirectly() {
+        const languages = ['zh-CN', 'zh-TW', 'en'];
+        const currentIndex = languages.indexOf(currentLanguage);
+        const nextLang = languages[(currentIndex + 1) % languages.length];
+        setLanguage(nextLang);
+    }
+
+    // 更新顶部快捷设置按钮状态
+    function updateSettingsModalText() {
+        updateQuickSettingsButtons();
+    }
+
+    // 初始化快捷设置按钮事件
     function initSettingsModal() {
         const settingsBtn = document.getElementById('settingsBtn');
-        const settingsOverlay = document.getElementById('settingsOverlay');
-        const settingsCloseBtn = document.getElementById('settingsCloseBtn');
         
-        // 打开设置弹窗
         if (settingsBtn) {
-            settingsBtn.addEventListener('click', showSettingsModal);
+            settingsBtn.addEventListener('click', toggleThemeDirectly);
         }
-        
-        // 关闭设置弹窗
-        if (settingsOverlay) {
-            settingsOverlay.addEventListener('click', hideSettingsModal);
+
+        const languageToggleBtn = document.getElementById('languageToggleBtn');
+        if (languageToggleBtn) {
+            languageToggleBtn.addEventListener('click', toggleLanguageDirectly);
         }
-        if (settingsCloseBtn) {
-            settingsCloseBtn.addEventListener('click', hideSettingsModal);
-        }
-        
-        // ESC键关闭弹窗
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                hideSettingsModal();
-            }
-        });
-        
-        // 主题切换
-        document.querySelectorAll('.theme-option-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const theme = btn.dataset.theme;
-                setTheme(theme);
-            });
-        });
-        
-        // 语言切换
-        document.querySelectorAll('.lang-option-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const lang = btn.dataset.lang;
-                setLanguage(lang);
-            });
-        });
     }
 
     // 设置主题（使用StorageHelper）
     function setTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         document.body.setAttribute('data-theme', theme);
+        updateLogoForTheme(theme);
         StorageHelper.setItem(APP_CONFIG.STORAGE_KEYS.THEME, theme);
         updateSettingsModalText();
     }
@@ -4025,17 +4006,6 @@
                 this.switchToCubeType(cubeType);
             });
             
-            // 主题切换事件
-            if (this.elements.themeToggleBtn) {
-                this.elements.themeToggleBtn.addEventListener('click', () => {
-                    // 打开设置模态框
-                    const settingsModal = document.getElementById('settingsModal');
-                    if (settingsModal) {
-                        settingsModal.classList.add('active');
-                    }
-                });
-            }
-            
             // 声音开关事件
             if (this.elements.soundBtn) {
                 this.elements.soundBtn.addEventListener('click', () => {
@@ -5061,6 +5031,7 @@
         applyTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             document.body.setAttribute('data-theme', theme);
+            updateLogoForTheme(theme);
             document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === theme));
         }
         
@@ -5162,6 +5133,7 @@
             
             document.documentElement.setAttribute('data-theme', newTheme);
             document.body.setAttribute('data-theme', newTheme);
+            updateLogoForTheme(newTheme);
             
             // 更新按钮图标
             const icon = this.elements.themeToggleBtn.querySelector('i');
@@ -5181,6 +5153,7 @@
             const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'dark');
             document.documentElement.setAttribute('data-theme', savedTheme);
             document.body.setAttribute('data-theme', savedTheme);
+            updateLogoForTheme(savedTheme);
         }
         
         updateSoundButton() {

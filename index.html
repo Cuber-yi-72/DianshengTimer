@@ -58,51 +58,6 @@
         按 <span class="esc-key">ESC</span> 键取消观察
     </div>
 
-    <!-- 设置弹窗 -->
-    <div class="settings-modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-        <div class="settings-overlay" id="settingsOverlay" aria-hidden="true"></div>
-        <div class="settings-content" role="document">
-            <div class="settings-header">
-                <h3 id="settingsTitle">设置</h3>
-                <button class="settings-close-btn" id="settingsCloseBtn" aria-label="关闭设置" aria-keyshortcuts="Escape">
-                    <i class="fas fa-times" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div class="settings-body">
-                <!-- 主题设置 -->
-                <div class="settings-section" role="group" aria-labelledby="themeTitle">
-                    <div class="settings-section-title" id="themeTitle">主题</div>
-                    <div class="settings-options" role="radiogroup" aria-label="选择主题">
-                        <button class="theme-option-btn" data-theme="dark" id="themeDarkBtn" role="radio" aria-checked="true" aria-label="深色模式">
-                            <i class="fas fa-moon" aria-hidden="true"></i>
-                            <span id="darkThemeText">深色模式</span>
-                        </button>
-                        <button class="theme-option-btn" data-theme="light" id="themeLightBtn" role="radio" aria-checked="false" aria-label="浅色模式">
-                            <i class="fas fa-sun" aria-hidden="true"></i>
-                            <span id="lightThemeText">浅色模式</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 语言设置 -->
-                <div class="settings-section" role="group" aria-labelledby="languageTitle">
-                    <div class="settings-section-title" id="languageTitle">语言</div>
-                    <div class="settings-options" role="radiogroup" aria-label="选择语言">
-                        <button class="lang-option-btn" data-lang="zh-CN" id="langSCBtn" role="radio" aria-checked="true" aria-label="简体中文">
-                            <span id="langSCText">简体中文</span>
-                        </button>
-                        <button class="lang-option-btn" data-lang="zh-TW" id="langTCBtn" role="radio" aria-checked="false" aria-label="繁體中文">
-                            <span id="langTCText">繁體中文</span>
-                        </button>
-                        <button class="lang-option-btn" data-lang="en" id="langENBtn" role="radio" aria-checked="false" aria-label="English">
-                            <span id="langENText">English</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- 原有隐藏元素（保持JavaScript兼容性） -->
     <div class="theme-controls" aria-hidden="true">
         <button class="theme-btn active" data-theme="dark" data-i18n="blackTheme" title="黑色主题" aria-label="黑色主题">
@@ -133,10 +88,14 @@
                     <div class="header-title">魔方计时器</div>
                 </div>
 
-                <!-- 设置按钮 -->
-                <button class="theme-toggle-btn" id="settingsBtn" title="设置" aria-label="打开设置" aria-keyshortcuts="Ctrl+,">
-                    <i class="fas fa-cog" aria-hidden="true"></i>
-                </button>
+                <div class="quick-settings-controls" aria-label="显示设置">
+                    <button class="theme-toggle-btn icon-btn" id="settingsBtn" title="切换主题" aria-label="切换主题">
+                        <i class="fas fa-moon" aria-hidden="true"></i>
+                    </button>
+                    <button class="language-toggle-btn icon-btn" id="languageToggleBtn" title="切换语言" aria-label="切换语言">
+                        <i class="fas fa-language" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- 第二行：魔方类型选择器和导航按钮 -->
@@ -149,8 +108,12 @@
                     <option value="squareCircle4">二阶魔轮·四分轮</option>
                     <option value="squareCircle8">二阶魔轮·八分轮</option>
                 </select>
-                <button class="prev-scramble-btn" id="prevScrambleBtn" aria-label="上一条打乱公式" tabindex="0">上一条</button>
-                <button class="next-scramble-btn" id="nextScrambleBtn" aria-label="下一条打乱公式" tabindex="0">下一条</button>
+                <button class="prev-scramble-btn icon-btn" id="prevScrambleBtn" title="上一条" aria-label="上一条打乱公式" tabindex="0">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                </button>
+                <button class="next-scramble-btn icon-btn" id="nextScrambleBtn" title="下一条" aria-label="下一条打乱公式" tabindex="0">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </button>
                 <button class="stats-float-btn" id="statsFloatBtn" title="查看成绩统计" aria-label="查看成绩统计" data-i18n="stats">
                     成绩
                 </button>
@@ -170,7 +133,9 @@
             <!-- 打乱公式显示（在控制区域内） -->
             <div class="scramble-display-section">
                 <div class="scramble-text" id="scrambleContent"></div>
-                <button class="copy-scramble-btn" id="copyBtn">复制</button>
+                <button class="copy-scramble-btn icon-btn" id="copyBtn" title="复制打乱公式" aria-label="复制打乱公式">
+                    <i class="fas fa-copy" aria-hidden="true"></i>
+                </button>
                 <button class="coordinate-scramble-btn" id="coordinateBtn" data-i18n="coordinate">转动方式</button>
             </div>
         </div>
@@ -206,25 +171,25 @@
 
                 <!-- 历史最佳成绩统计区 -->
                 <div class="best-stats-card">
-                    <div class="stats-card-title">历史最佳成绩</div>
+                    <div class="stats-card-title">历史最佳</div>
                     <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestSingle">最佳单次</span>
+                        <span class="stat-label" data-i18n="bestSingle">单次</span>
                         <span class="stat-value" id="bestTime">--</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestAo5">最佳 Ao5</span>
+                        <span class="stat-label" data-i18n="bestAo5">Ao5</span>
                         <span class="stat-value" id="bestAo5">--</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestAo12">最佳 Ao12</span>
+                        <span class="stat-label" data-i18n="bestAo12">Ao12</span>
                         <span class="stat-value" id="bestAo12">--</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestAo50">最佳 Ao50</span>
+                        <span class="stat-label" data-i18n="bestAo50">Ao50</span>
                         <span class="stat-value" id="bestAo50">--</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestAo100">最佳 Ao100</span>
+                        <span class="stat-label" data-i18n="bestAo100">Ao100</span>
                         <span class="stat-value" id="bestAo100">--</span>
                     </div>
                 </div>
@@ -233,8 +198,10 @@
             <!-- 历史成绩记录区单独一行 -->
             <div class="history-times-card">
                 <div class="history-times-title">
-                    <span>历史成绩</span>
-                    <button class="history-reset-btn" id="historyResetBtn" title="清除所有数据">重置</button>
+                    <span>历史</span>
+                    <button class="history-reset-btn icon-btn danger-icon-btn" id="historyResetBtn" title="清除所有数据" aria-label="清除所有数据">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    </button>
                 </div>
                 <div class="history-times-summary" id="historySummary">次数: 0 | 平均: --</div>
                 <div class="history-times-list" id="historyTimesList">
@@ -402,7 +369,7 @@
 
         <!-- 打乱公式导出区 -->
         <div class="scramble-export-section">
-            <div class="export-count-label">导出公式数量：</div>
+            <div class="export-count-label">数量：</div>
             <select class="export-count-select" id="generateCount">
                 <option value="5">5</option>
                 <option value="12">12</option>

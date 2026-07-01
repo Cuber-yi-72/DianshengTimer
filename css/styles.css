@@ -178,8 +178,6 @@
             margin: 20px auto;
             position: relative;
             overflow: hidden;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
         }
 
         /* ===== 字体基准 ===== */
@@ -224,17 +222,27 @@
             flex-shrink: 0;
         }
 
-        .theme-toggle-btn {
+        .quick-settings-controls {
             position: absolute;
             top: 0.625rem;
             right: 1.25rem;
-            width: 1.875rem;
-            height: 2.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn,
+        .theme-toggle-btn,
+        .language-toggle-btn,
+        .prev-scramble-btn,
+        .next-scramble-btn,
+        .stats-float-btn,
+        .copy-scramble-btn,
+        .coordinate-scramble-btn,
+        .history-reset-btn {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 0.625rem;
-            color: var(--primary-color);
-            font-size: 1rem;
+            color: var(--text-primary);
             cursor: pointer;
             transition: all var(--transition-fast);
             display: flex;
@@ -243,13 +251,37 @@
             box-shadow: var(--shadow-primary);
         }
 
-        .theme-toggle-btn:hover {
-            background: var(--bg-hover);
-            border-color: var(--primary-color);
-            transform: scale(1.05);
+        .theme-toggle-btn,
+        .language-toggle-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            color: var(--primary-color);
+            font-size: 1rem;
         }
 
-        .theme-toggle-btn:active {
+        .icon-btn:hover,
+        .theme-toggle-btn:hover,
+        .language-toggle-btn:hover,
+        .prev-scramble-btn:hover,
+        .next-scramble-btn:hover,
+        .stats-float-btn:hover,
+        .copy-scramble-btn:hover,
+        .coordinate-scramble-btn:hover,
+        .history-reset-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .icon-btn:active,
+        .theme-toggle-btn:active,
+        .language-toggle-btn:active,
+        .prev-scramble-btn:active,
+        .next-scramble-btn:active,
+        .stats-float-btn:active,
+        .copy-scramble-btn:active,
+        .coordinate-scramble-btn:active,
+        .history-reset-btn:active {
             transform: scale(0.95);
         }
 
@@ -306,29 +338,16 @@
         .prev-scramble-btn, .next-scramble-btn {
             position: absolute;
             top: 1.5625rem;
-            width: 5rem;
-            min-width: 60px;
+            width: 2.5rem;
+            min-width: 2.5rem;
             height: 2.5rem;
             min-height: 36px;
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 0.625rem;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-primary);
             font-size: 0.875rem;
             font-weight: 500;
-            box-shadow: var(--shadow-primary);
         }
 
         .prev-scramble-btn:hover, .next-scramble-btn:hover {
-            background-color: var(--bg-hover);
-            border-color: var(--primary-color);
             transform: translateY(-0.0625rem);
-            box-shadow: var(--shadow-glow);
         }
 
         .prev-scramble-btn:active, .next-scramble-btn:active {
@@ -340,7 +359,7 @@
         }
 
         .next-scramble-btn {
-            left: 41.875rem;
+            left: 39.25rem;
         }
 
         .prev-scramble-btn:disabled, .next-scramble-btn:disabled {
@@ -410,9 +429,7 @@
         .scramble-display-section {
             min-height: 80px;
             height: auto;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 12px 15px;
+            padding: 0;
             display: flex;
             align-items: flex-start;
             gap: 10px;
@@ -440,42 +457,20 @@
         }
 
         .copy-scramble-btn {
-            width: 60px;
-            height: 30px;
-            background-color: var(--bg-light);
-            border: 1px solid var(--border-color);
-            border-radius: 3px;
-            color: var(--text-primary);
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 36px;
+            height: 32px;
+            flex: 0 0 auto;
         }
 
-        .copy-scramble-btn:hover {
-            background-color: var(--border-color);
+        .copy-scramble-btn i {
+            font-size: 14px;
         }
 
         .coordinate-scramble-btn {
-            width: 60px;
-            height: 30px;
-            background-color: var(--bg-light);
-            border: 1px solid var(--border-color);
-            border-radius: 3px;
-            color: var(--text-primary);
+            min-width: 6rem;
+            height: 32px;
             font-size: 12px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             margin-left: 8px; /* 与复制按钮之间留出间距 */
-        }
-
-        .coordinate-scramble-btn:hover {
-            background-color: var(--border-color);
         }
 
 
@@ -614,27 +609,21 @@
         }
 
         .history-reset-btn {
-            background-color: var(--danger-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 5px 12px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            box-shadow: 0 2px 8px rgba(193, 18, 31, 0.3);
+            width: 32px;
+            height: 32px;
+            color: var(--danger-color);
+            flex: 0 0 auto;
         }
 
         .history-reset-btn:hover {
-            background-color: #c1121f;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(193, 18, 31, 0.4);
+            border-color: var(--danger-color);
+            color: #ffffff;
+            background-color: var(--danger-color);
+            box-shadow: 0 4px 12px rgba(193, 18, 31, 0.35);
         }
 
         .history-reset-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 6px rgba(193, 18, 31, 0.3);
+            transform: scale(0.95);
         }
 
         .history-times-summary {
@@ -1237,206 +1226,6 @@
             font-weight: bold;
         }
 
-        /* ===== 设置弹窗 ===== */
-        .settings-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .settings-modal.active {
-            display: flex;
-        }
-
-        .settings-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-        }
-
-        .settings-content {
-            position: relative;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            box-shadow: var(--shadow-primary);
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow: hidden;
-            z-index: 10001;
-            animation: modalFadeIn 0.3s ease;
-        }
-
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .settings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 25px;
-            border-bottom: 1px solid var(--border-color);
-            background: var(--bg-color);
-        }
-
-        .settings-header h3 {
-            margin: 0;
-            color: var(--text-primary);
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .settings-close-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        .settings-close-btn:hover {
-            background: var(--bg-hover);
-            border-color: var(--primary-color);
-            transform: rotate(90deg);
-        }
-
-        .settings-body {
-            padding: 25px;
-            max-height: calc(80vh - 80px);
-            overflow-y: auto;
-        }
-
-        .settings-section {
-            margin-bottom: 30px;
-        }
-
-        .settings-section:last-child {
-            margin-bottom: 0;
-        }
-
-        .settings-section-title {
-            color: var(--primary-color);
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .settings-options {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .theme-option-btn,
-        .lang-option-btn {
-            flex: 1;
-            min-width: 120px;
-            padding: 15px 20px;
-            background: var(--bg-color);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        .theme-option-btn i,
-        .lang-option-btn i {
-            font-size: 18px;
-        }
-
-        .theme-option-btn:hover,
-        .lang-option-btn:hover {
-            background: var(--bg-hover);
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 201, 240, 0.2);
-        }
-
-        .theme-option-btn.active,
-        .lang-option-btn.active {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            color: #ffffff;
-        }
-
-        .theme-option-btn:active,
-        .lang-option-btn:active {
-            transform: translateY(0);
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 600px) {
-            .settings-content {
-                width: 95%;
-                max-height: 90vh;
-            }
-
-            .settings-header {
-                padding: 15px 20px;
-            }
-
-            .settings-header h3 {
-                font-size: 18px;
-            }
-
-            .settings-body {
-                padding: 20px;
-            }
-
-            .settings-options {
-                flex-direction: column;
-            }
-
-            .theme-option-btn,
-            .lang-option-btn {
-                width: 100%;
-                min-width: auto;
-            }
-        }
-
 /* 转角八面体2D视图 - 使用SVG格式，与双子八面体共享样式 */
 
         /* ===== 打乱公式导出区 ===== */
@@ -1446,9 +1235,6 @@
             right: 20px;
             width: auto;
             height: 60px;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
             padding: 12px 20px;
             display: flex;
             align-items: center;
@@ -1586,7 +1372,7 @@
                 min-height: 40px !important;
             }
             
-            .theme-toggle-btn {
+            .quick-settings-controls {
                 position: absolute !important;
                 top: 0.625rem !important;
                 right: 1.25rem !important;
@@ -1608,7 +1394,7 @@
             .next-scramble-btn {
                 position: absolute !important;
                 top: 1.5625rem !important;
-                left: 41.875rem !important;
+                left: 39.25rem !important;
             }
             
             .stats-container-mobile {
@@ -1703,7 +1489,8 @@
                 font-size: 18px;
             }
 
-            .theme-toggle-btn {
+            .theme-toggle-btn,
+            .language-toggle-btn {
                 width: 32px;
                 height: 32px;
                 font-size: 14px;
@@ -1716,7 +1503,8 @@
             }
 
             .prev-scramble-btn, .next-scramble-btn {
-                width: 70px;
+                width: 35px;
+                min-width: 35px;
                 height: 35px;
                 font-size: 12px;
             }
@@ -1852,8 +1640,14 @@
                 font-size: 14px;
             }
 
-            .theme-toggle-btn {
+            .quick-settings-controls {
                 position: static;
+                flex: 0 0 auto;
+                gap: 6px;
+            }
+
+            .theme-toggle-btn,
+            .language-toggle-btn {
                 width: 36px;
                 height: 36px;
                 font-size: 14px;
@@ -1881,30 +1675,26 @@
             .stats-float-btn {
                 flex: 0 0 auto;
                 width: auto;
-                min-width: 50px;
+                min-width: 40px;
                 height: 36px;
                 font-size: 12px;
                 white-space: nowrap;
             }
 
+            .prev-scramble-btn,
+            .next-scramble-btn {
+                width: 40px;
+            }
+
             /* 移动端成绩统计浮动按钮改为普通按钮样式 */
             .stats-float-btn {
                 position: static;
-                background-color: var(--bg-card);
-                border: 1px solid var(--border-color);
-                border-radius: 0.625rem;
-                color: var(--text-primary);
                 font-size: 12px;
                 font-weight: 500;
-                box-shadow: var(--shadow-primary);
-                transition: all var(--transition-fast);
             }
 
             .stats-float-btn:hover {
-                background-color: var(--bg-hover);
-                border-color: var(--primary-color);
                 transform: none;
-                box-shadow: var(--shadow-primary);
             }
 
             .stats-float-btn:active {
@@ -2019,8 +1809,8 @@
             }
 
             .history-reset-btn {
-                padding: 6px 12px;
-                font-size: 12px;
+                width: 32px;
+                height: 32px;
                 flex-shrink: 0;
             }
 
@@ -2063,7 +1853,7 @@
                 min-height: 50px;
                 max-height: none;
                 height: auto;
-                padding: 10px;
+                padding: 0;
                 padding-right: 70px; /* 增加右侧内边距，为两个垂直堆叠的按钮留出空间 */
                 flex-direction: column;
                 align-items: flex-start;
@@ -2101,17 +1891,17 @@
                 position: absolute;
                 top: 10px;
                 right: 10px;  /* 保持复制按钮在原始位置 */
-                width: 50px;
-                height: 28px;
-                font-size: 11px;
+                width: 36px;
+                height: 32px;
             }
             
             .coordinate-scramble-btn {
                 position: absolute;
-                top: 43px;  /* 放在复制按钮下方 */
+                top: 48px;  /* 放在复制按钮下方 */
                 right: 10px; /* 与复制按钮对齐 */
-                width: 50px;
-                height: 28px;
+                width: 58px;
+                min-width: 58px;
+                height: 32px;
                 font-size: 11px;
                 margin-left: 0; /* 重置之前设置的边距 */
             }
@@ -2260,34 +2050,6 @@
                 height: 32px;
                 font-size: 12px;
                 padding: 6px 12px;
-            }
-
-            .settings-content {
-                width: 95%;
-                max-height: 95vh;
-            }
-
-            .settings-header {
-                padding: 15px 20px;
-            }
-
-            .settings-header h3 {
-                font-size: 18px;
-            }
-
-            .settings-body {
-                padding: 20px;
-            }
-
-            .settings-options {
-                flex-direction: column;
-            }
-
-            .theme-option-btn,
-            .lang-option-btn {
-                width: 100%;
-                min-width: auto;
-                padding: 12px 15px;
             }
 
             /* ===== 公式子样式 ===== */
