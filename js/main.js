@@ -121,11 +121,9 @@
         // 更新坐标按钮
         if (cache.coordinateBtn) cache.coordinateBtn.textContent = t('coordinate');
 
-        // 更新统计卡片标题
+        // 更新统计区域标题
         const currentStatsTitle = document.querySelector('.current-stats-card .stats-card-title');
-        const bestStatsTitle = document.querySelector('.best-stats-card .stats-card-title');
-        if (currentStatsTitle) currentStatsTitle.textContent = t('currentStats');
-        if (bestStatsTitle) bestStatsTitle.textContent = t('bestStats');
+        if (currentStatsTitle) currentStatsTitle.textContent = t('statistics');
 
         // 更新历史成绩
         const historyTitle = document.querySelector('.history-times-title span');
@@ -134,7 +132,10 @@
             cache.historyResetBtn.title = t('clearData');
             cache.historyResetBtn.setAttribute('aria-label', t('clearData'));
         }
-        if (cache.exportBestAo5Btn) cache.exportBestAo5Btn.textContent = t('exportAll');
+        if (cache.exportBestAo5Btn) {
+            cache.exportBestAo5Btn.title = t('exportAll');
+            cache.exportBestAo5Btn.setAttribute('aria-label', t('exportAll'));
+        }
 
         // 更新历史记录列表
         if (cache.historyTimesList && cache.historyTimesList.innerHTML.includes('暂无时间记录')) {
@@ -4726,6 +4727,7 @@
             const statsContainer = document.querySelector('.stats-container-mobile');
             const closeBtn = document.querySelector('.stats-close-btn');
             if (statsContainer) {
+                statsContainer.classList.remove('closing');
                 statsContainer.classList.add('show');
             }
             if (closeBtn) {
@@ -4737,10 +4739,16 @@
             const statsContainer = document.querySelector('.stats-container-mobile');
             const closeBtn = document.querySelector('.stats-close-btn');
             if (statsContainer) {
+                statsContainer.classList.add('closing');
                 statsContainer.classList.remove('show');
+                window.setTimeout(() => {
+                    statsContainer.classList.remove('closing');
+                }, 160);
             }
             if (closeBtn) {
-                closeBtn.classList.remove('show');
+                window.setTimeout(() => {
+                    closeBtn.classList.remove('show');
+                }, 120);
             }
         }
         
@@ -6711,7 +6719,7 @@
  * 格式化时间为HTML格式（用于显示）
  * @param {number|null} seconds - 秒数
  * @param {string} penalty - 惩罚类型（''、'+2'、'DNF'）
- * @returns {string} 格式化后的时间字符串，格式为 mm:ss.000
+ * @returns {string} 格式化后的时间字符串，小于60秒显示 ss.000，超过后显示 m:ss.000
  */
         formatTime(seconds, penalty = '') {
             if (seconds === null) {
@@ -6726,11 +6734,11 @@
             const minutes = Math.floor(numSeconds / 60);
             const secs = numSeconds % 60;
 
-            // 格式化为 mm:ss.000 格式
             const secsStr = secs.toFixed(3);
             const [integerPart, decimalPart = '000'] = secsStr.split('.');
-            const paddedInteger = integerPart.padStart(2, '0');
-            const timeStr = `${minutes}:${paddedInteger}.${decimalPart}`;
+            const timeStr = minutes > 0
+                ? `${minutes}:${integerPart.padStart(2, '0')}.${decimalPart}`
+                : `${parseInt(integerPart, 10)}.${decimalPart}`;
 
             if (penalty === 'DNF') {
                 return '<span class="dnf">DNF</span>';

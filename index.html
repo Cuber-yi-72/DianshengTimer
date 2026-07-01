@@ -149,56 +149,36 @@
 
         <!-- 移动端统计栏容器 -->
         <div class="stats-container-mobile">
-            <!-- 当前成绩统计区和历史最佳成绩统计区横向排列 -->
+            <!-- 当前成绩统计区和历史最佳成绩统计区 -->
             <div class="stats-row-mobile">
-                <!-- 当前成绩统计区 -->
                 <div class="current-stats-card" role="region" aria-label="当前成绩统计">
-                    <div class="stats-card-title">当前成绩统计</div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="single">单次</span>
-                        <span class="stat-value" id="currentTime">--</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="ao5">Ao5</span>
-                        <span class="stat-value" id="currentAo5" aria-live="polite">--</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="ao12">Ao12</span>
-                        <span class="stat-value" id="currentAo12" aria-live="polite">--</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="ao50">Ao50</span>
-                        <span class="stat-value" id="currentAo50" aria-live="polite">--</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="ao100">Ao100</span>
-                        <span class="stat-value" id="currentAo100" aria-live="polite">--</span>
-                    </div>
-                </div>
+                    <div class="stats-card-title">统计</div>
+                    <div class="stats-comparison-table">
+                        <div class="stats-table-header" aria-hidden="true"></div>
+                        <div class="stats-table-header" data-i18n="current">当前</div>
+                        <div class="stats-table-header" data-i18n="best">最佳</div>
 
-                <!-- 历史最佳成绩统计区 -->
-                <div class="best-stats-card">
-                    <div class="stats-card-title">历史最佳</div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestSingle">单次</span>
-                        <span class="stat-value" id="bestTime">--</span>
+                        <div class="stat-label" data-i18n="single">单次</div>
+                        <div class="stat-value" id="currentTime">--</div>
+                        <div class="stat-value best-stat-value" id="bestTime">--</div>
+
+                        <div class="stat-label" data-i18n="ao5">Ao5</div>
+                        <div class="stat-value" id="currentAo5" aria-live="polite">--</div>
+                        <div class="stat-value best-stat-value" id="bestAo5">--</div>
+
+                        <div class="stat-label" data-i18n="ao12">Ao12</div>
+                        <div class="stat-value" id="currentAo12" aria-live="polite">--</div>
+                        <div class="stat-value best-stat-value" id="bestAo12">--</div>
+
+                        <div class="stat-label" data-i18n="ao50">Ao50</div>
+                        <div class="stat-value" id="currentAo50" aria-live="polite">--</div>
+                        <div class="stat-value best-stat-value" id="bestAo50">--</div>
+
+                        <div class="stat-label" data-i18n="ao100">Ao100</div>
+                        <div class="stat-value" id="currentAo100" aria-live="polite">--</div>
+                        <div class="stat-value best-stat-value" id="bestAo100">--</div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestAo5">Ao5</span>
-                        <span class="stat-value" id="bestAo5">--</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestAo12">Ao12</span>
-                        <span class="stat-value" id="bestAo12">--</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestAo50">Ao50</span>
-                        <span class="stat-value" id="bestAo50">--</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="bestAo100">Ao100</span>
-                        <span class="stat-value" id="bestAo100">--</span>
-                    </div>
+                    <div class="stats-history-divider" aria-hidden="true"></div>
                 </div>
             </div>
 
@@ -206,15 +186,19 @@
             <div class="history-times-card">
                 <div class="history-times-title">
                     <span>历史</span>
-                    <button class="history-reset-btn icon-btn danger-icon-btn" id="historyResetBtn" title="清除所有数据" aria-label="清除所有数据">
-                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
-                    </button>
+                    <div class="history-title-actions">
+                        <button class="history-export-btn icon-btn" id="exportBestAo5Btn" title="导出所有成绩" aria-label="导出所有成绩">
+                            <i class="fas fa-file-export" aria-hidden="true"></i>
+                        </button>
+                        <button class="history-reset-btn icon-btn danger-icon-btn" id="historyResetBtn" title="清除所有数据" aria-label="清除所有数据">
+                            <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="history-times-summary" id="historySummary">次数: 0 | 平均: --</div>
                 <div class="history-times-list" id="historyTimesList">
                     <!-- 历史成绩将通过JavaScript动态添加 -->
                 </div>
-                <button class="history-export-btn" id="exportBestAo5Btn">导出所有成绩</button>
             </div>
 
             <!-- 移动端成绩统计关闭按钮 -->
