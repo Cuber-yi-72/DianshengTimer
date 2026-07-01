@@ -5676,9 +5676,20 @@
 
         // 动态调整打乱公式区域高度
         adjustScrambleSectionHeight() {
+            const scrambleControlsSection = document.querySelector('.scramble-controls-section');
             const timerSection = document.querySelector('.timer-main-section');
 
             if (timerSection) {
+                if (window.innerWidth <= 768) {
+                    timerSection.style.top = '';
+                    timerSection.style.height = '';
+                    if (scrambleControlsSection) {
+                        const mobileOffset = scrambleControlsSection.offsetHeight + 32;
+                        timerSection.style.setProperty('--mobile-scramble-offset', `${mobileOffset}px`);
+                    }
+                    return;
+                }
+
                 const timerTop = 75;
                 timerSection.style.top = timerTop + 'px';
 

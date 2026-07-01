@@ -1893,15 +1893,17 @@
 
             /* ===== 打乱控制区 ===== */
             .scramble-controls-section {
-                position: static;
-                left: auto;
-                top: auto;
-                width: 100%;
-                margin: 8px 0;
+                position: absolute;
+                left: 5px;
+                right: 5px;
+                top: calc(5px + 98px);
+                width: auto;
+                margin: 0;
                 max-height: none;
                 height: auto;
-                padding: 10px;
+                padding: 0 16px;
                 overflow: visible;
+                z-index: 4;
             }
 
             .scramble-controls {
@@ -1983,15 +1985,16 @@
 
             /* ===== 计时区 ===== */
             .timer-main-section {
-                position: static;
+                position: relative;
                 left: auto;
                 top: auto;
                 width: 100%;
                 height: auto;
                 flex-direction: column;
                 gap: 12px;
-                padding: 12px;
-                min-height: auto;
+                --mobile-scramble-offset: 132px;
+                padding: var(--mobile-scramble-offset) 12px 12px;
+                min-height: calc(var(--mobile-scramble-offset) + 390px);
             }
 
             /* 计时显示区 */
