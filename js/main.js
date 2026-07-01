@@ -5698,7 +5698,7 @@
                     return;
                 }
 
-                const timerTop = 75;
+                const timerTop = 92;
                 timerSection.style.top = timerTop + 'px';
 
                 const containerHeight = document.querySelector('.container').offsetHeight;
