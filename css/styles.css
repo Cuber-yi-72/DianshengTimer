@@ -25,8 +25,8 @@
             --inspecting-color: #ffd166;
             --ready-color: #4caf50;
 
-            --shadow-primary: 0 8px 25px rgba(0, 0, 0, 0.4);
-            --shadow-glow: 0 0 15px rgba(76, 201, 240, 0.4);
+            --shadow-primary: 0 2px 8px rgba(0, 0, 0, 0.18);
+            --shadow-glow: 0 0 0 2px rgba(76, 201, 240, 0.18);
 
             --transition-fast: 0.15s ease;
             --transition-normal: 0.25s ease;
@@ -99,8 +99,8 @@
             --inspecting-color: #f4a261;
             --ready-color: #2a9d8f;
 
-            --shadow-primary: 0 8px 25px rgba(0, 0, 0, 0.1);
-            --shadow-glow: 0 0 15px rgba(67, 97, 238, 0.3);
+            --shadow-primary: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-glow: 0 0 0 2px rgba(67, 97, 238, 0.14);
 
             --transition-fast: 0.15s ease;
             --transition-normal: 0.25s ease;
@@ -286,17 +286,31 @@
         }
 
         /* ===== 顶部功能按钮区 ===== */
-        .cube-type-selector {
+        .cube-type-control {
             position: absolute;
             top: 1.25rem;
             left: 17.5rem;
             width: 18rem;
             min-width: 100px;
+            z-index: 20;
+        }
+
+        .cube-type-selector {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 2.625rem;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .custom-cube-select {
+            width: 100%;
             height: 2.625rem;
             min-height: 36px;
-            background-color: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.625rem;
             cursor: pointer;
             transition: all var(--transition-fast);
             color: var(--text-primary);
@@ -304,14 +318,10 @@
             font-weight: 600;
             padding: 0 0.75rem;
             outline: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234cc9f0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.75rem center;
-            background-size: 0.75rem;
-            padding-right: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
             box-shadow: var(--shadow-primary);
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -319,20 +329,65 @@
             user-select: none;
         }
 
-        .cube-type-selector:hover {
-            background-color: rgba(76, 201, 240, 0.1);
-            border-color: rgba(76, 201, 240, 0.3);
+        .custom-cube-select:hover,
+        .cube-type-control.open .custom-cube-select {
+            background: var(--bg-hover);
+            border-color: var(--primary-color);
             box-shadow: var(--shadow-glow);
         }
 
-        .cube-type-selector:focus {
+        .custom-cube-select:focus-visible {
             box-shadow: 0 0 0 0.125rem rgba(76, 201, 240, 0.3);
         }
 
-        .cube-type-selector option {
+        .custom-cube-select i {
+            color: var(--primary-color);
+            font-size: 0.75rem;
+            transition: transform var(--transition-fast);
+        }
+
+        .cube-type-control.open .custom-cube-select i {
+            transform: rotate(180deg);
+        }
+
+        .cube-type-menu {
+            position: absolute;
+            top: calc(100% + 0.375rem);
+            left: 0;
+            right: 0;
+            display: none;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 0.375rem;
             background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.625rem;
+            box-shadow: var(--shadow-primary);
+        }
+
+        .cube-type-control.open .cube-type-menu {
+            display: flex;
+        }
+
+        .cube-type-menu-item {
+            width: 100%;
+            min-height: 2rem;
+            padding: 0 0.625rem;
+            border: 0;
+            border-radius: 0.5rem;
+            background: transparent;
             color: var(--text-primary);
-            padding: 0.625rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .cube-type-menu-item:hover,
+        .cube-type-menu-item.active {
+            background: var(--bg-hover);
+            color: var(--primary-color);
         }
 
         .prev-scramble-btn, .next-scramble-btn {
@@ -619,7 +674,7 @@
             border-color: var(--danger-color);
             color: #ffffff;
             background-color: var(--danger-color);
-            box-shadow: 0 4px 12px rgba(193, 18, 31, 0.35);
+            box-shadow: 0 0 0 2px rgba(193, 18, 31, 0.16);
         }
 
         .history-reset-btn:active {
@@ -692,18 +747,18 @@
             font-weight: 500;
             cursor: pointer;
             transition: all var(--transition-fast);
-            box-shadow: 0 3px 10px rgba(76, 201, 240, 0.3);
+            box-shadow: 0 1px 4px rgba(76, 201, 240, 0.14);
         }
 
         .history-export-btn:hover {
             background-color: var(--btn-primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.4);
+            box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.16);
         }
 
         .history-export-btn:active {
             transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(76, 201, 240, 0.3);
+            box-shadow: 0 1px 3px rgba(76, 201, 240, 0.12);
         }
 
         /* ===== 右击菜单样式 ===== */
@@ -839,17 +894,17 @@
             font-weight: 600;
             cursor: pointer;
             transition: all var(--transition-fast);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.16);
         }
 
         .start-timer-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.14);
         }
 
         .start-timer-btn:active {
             transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
         }
 
         .start-timer-btn {
@@ -867,12 +922,12 @@
         .reset-timer-btn:hover {
             background-color: #d61a6f;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(214, 26, 111, 0.4);
+            box-shadow: 0 0 0 2px rgba(214, 26, 111, 0.16);
         }
 
         .reset-timer-btn:active {
             transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(214, 26, 111, 0.3);
+            box-shadow: 0 1px 4px rgba(214, 26, 111, 0.12);
         }
 
         .inspection-btn {
@@ -882,12 +937,12 @@
         .inspection-btn:hover {
             background-color: #e89015;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(232, 144, 21, 0.4);
+            box-shadow: 0 0 0 2px rgba(232, 144, 21, 0.16);
         }
 
         .inspection-btn:active {
             transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(232, 144, 21, 0.3);
+            box-shadow: 0 1px 4px rgba(232, 144, 21, 0.12);
         }
 
         /* 魔方2D模型子区域 */
@@ -1085,7 +1140,7 @@
             color: white;
             font-size: 20px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
             z-index: 1001;
             display: none;
             align-items: center;
@@ -1378,7 +1433,7 @@
                 right: 1.25rem !important;
             }
             
-            .cube-type-selector {
+            .cube-type-control {
                 position: absolute !important;
                 top: 1.25rem !important;
                 left: 17.5rem !important;
@@ -1496,8 +1551,11 @@
                 font-size: 14px;
             }
 
-            .cube-type-selector {
+            .cube-type-control {
                 width: 150px;
+            }
+
+            .custom-cube-select {
                 height: 35px;
                 font-size: 12px;
             }
@@ -1600,7 +1658,7 @@
             }
 
             /* 隐藏原有的固定定位按钮 */
-            .cube-type-selector,
+            .cube-type-control,
             .prev-scramble-btn,
             .next-scramble-btn {
                 position: static;
@@ -1661,13 +1719,21 @@
                 width: 100%;
             }
 
-            .cube-type-selector {
+            .cube-type-control {
                 flex: 1;
                 min-width: 0;
+                width: auto;
+            }
+
+            .custom-cube-select {
                 height: 36px;
                 font-size: 12px;
                 padding: 0 8px;
-                padding-right: 2rem;
+            }
+
+            .cube-type-menu {
+                max-height: 260px;
+                overflow-y: auto;
             }
 
             .prev-scramble-btn,

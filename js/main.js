@@ -21,6 +21,9 @@
 
                 // 魔方类型和控制
                 cubeTypeSelect: document.getElementById('cubeTypeSelect'),
+                cubeTypeSelectButton: document.getElementById('cubeTypeSelectButton'),
+                cubeTypeSelectLabel: document.getElementById('cubeTypeSelectLabel'),
+                cubeTypeMenu: document.getElementById('cubeTypeMenu'),
                 prevScrambleBtn: document.getElementById('prevScrambleBtn'),
                 nextScrambleBtn: document.getElementById('nextScrambleBtn'),
 
@@ -92,6 +95,7 @@
             cache.cubeTypeSelect.options[3].textContent = t('twinOctahedron2x2');
             cache.cubeTypeSelect.options[4].textContent = t('squareCircle4');
             cache.cubeTypeSelect.options[5].textContent = t('squareCircle8');
+            updateCustomCubeSelect();
         }
 
         // 更新上一条/下一条按钮
@@ -246,6 +250,74 @@
         setLanguage(nextLang);
     }
 
+    function updateCustomCubeSelect() {
+        const select = document.getElementById('cubeTypeSelect');
+        const label = document.getElementById('cubeTypeSelectLabel');
+        const menu = document.getElementById('cubeTypeMenu');
+        if (!select || !label || !menu) return;
+
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption) {
+            label.textContent = selectedOption.textContent;
+        }
+
+        Array.from(menu.children).forEach(item => {
+            item.classList.toggle('active', item.dataset.value === select.value);
+            item.setAttribute('aria-selected', item.dataset.value === select.value ? 'true' : 'false');
+            const option = Array.from(select.options).find(opt => opt.value === item.dataset.value);
+            if (option) item.textContent = option.textContent;
+        });
+    }
+
+    function closeCustomCubeSelect() {
+        const control = document.getElementById('cubeTypeControl');
+        const button = document.getElementById('cubeTypeSelectButton');
+        if (!control || !button) return;
+
+        control.classList.remove('open');
+        button.setAttribute('aria-expanded', 'false');
+    }
+
+    function initCustomCubeSelect() {
+        const select = document.getElementById('cubeTypeSelect');
+        const control = document.getElementById('cubeTypeControl');
+        const button = document.getElementById('cubeTypeSelectButton');
+        const menu = document.getElementById('cubeTypeMenu');
+        if (!select || !control || !button || !menu) return;
+
+        menu.innerHTML = '';
+        Array.from(select.options).forEach(option => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'cube-type-menu-item';
+            item.dataset.value = option.value;
+            item.setAttribute('role', 'option');
+            item.textContent = option.textContent;
+            item.addEventListener('click', () => {
+                select.value = option.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                updateCustomCubeSelect();
+                closeCustomCubeSelect();
+            });
+            menu.appendChild(item);
+        });
+
+        button.addEventListener('click', () => {
+            const isOpen = control.classList.toggle('open');
+            button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', event => {
+            if (!control.contains(event.target)) closeCustomCubeSelect();
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeCustomCubeSelect();
+        });
+
+        updateCustomCubeSelect();
+    }
+
     // 更新顶部快捷设置按钮状态
     function updateSettingsModalText() {
         updateQuickSettingsButtons();
@@ -280,6 +352,7 @@
         DOM_CACHE.init();
 
         initSettingsModal();
+        initCustomCubeSelect();
 
         // 恢复保存的主题
         const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'dark');
@@ -4004,6 +4077,7 @@
             this.elements.cubeTypeSelect.addEventListener('change', () => {
                 const cubeType = this.elements.cubeTypeSelect.value;
                 this.switchToCubeType(cubeType);
+                updateCustomCubeSelect();
             });
             
             // 声音开关事件
@@ -4755,6 +4829,7 @@
                     // 更新魔方选择下拉菜单状态
         
                     this.elements.cubeTypeSelect.value = this.state.currentCubeType;
+                    updateCustomCubeSelect();
         
         
         
