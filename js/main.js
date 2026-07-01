@@ -53,6 +53,7 @@
                 // 导出
                 generateCount: document.getElementById('generateCount'),
                 startNumber: document.getElementById('startNumber'),
+                scrambleExportToggle: document.getElementById('scrambleExportToggle'),
                 exportScramblesBtn: document.getElementById('exportScramblesBtn')
             };
         },
@@ -175,6 +176,10 @@
         if (exportCountLabel) exportCountLabel.textContent = t('exportCount');
         if (startIdLabel) startIdLabel.textContent = t('startId');
         if (cache.exportScramblesBtn) cache.exportScramblesBtn.textContent = t('exportScrambles');
+        if (cache.scrambleExportToggle) {
+            cache.scrambleExportToggle.title = t('exportScrambles');
+            cache.scrambleExportToggle.setAttribute('aria-label', t('exportScrambles'));
+        }
 
         // 更新全屏提示
         if (cache.fullscreenInfo) cache.fullscreenInfo.textContent = t('observing');
@@ -4052,6 +4057,7 @@
             // 导出功能元素
             this.elements.generateCount = getEl('generateCount');
             this.elements.startNumber = getEl('startNumber');
+            this.elements.scrambleExportToggle = getEl('scrambleExportToggle', true);
             this.elements.exportScramblesBtn = getEl('exportScramblesBtn');
             this.elements.scramblesList = getEl('scramblesList', true); // 可选元素
 
@@ -4363,8 +4369,14 @@
             
             // 生成打乱公式相关事件
             // this.elements.generateMultipleBtn.addEventListener('click', () => this.generateMultipleScrambles()); // 不再需要
+            if (this.elements.scrambleExportToggle) {
+                this.elements.scrambleExportToggle.addEventListener('click', () => this.toggleScrambleExportPanel());
+            }
             if (this.elements.exportScramblesBtn) {
-                this.elements.exportScramblesBtn.addEventListener('click', () => this.exportScrambles());
+                this.elements.exportScramblesBtn.addEventListener('click', () => {
+                    this.exportScrambles();
+                    this.closeScrambleExportPanel();
+                });
             }
             
             // 键盘事件监听 - 使用capture阶段确保事件优先处理
@@ -4749,6 +4761,26 @@
                 window.setTimeout(() => {
                     closeBtn.classList.remove('show');
                 }, 120);
+            }
+        }
+
+        toggleScrambleExportPanel() {
+            const section = document.querySelector('.scramble-export-section');
+            if (!section) return;
+
+            const isOpen = section.classList.toggle('open');
+            if (this.elements.scrambleExportToggle) {
+                this.elements.scrambleExportToggle.setAttribute('aria-expanded', String(isOpen));
+            }
+        }
+
+        closeScrambleExportPanel() {
+            const section = document.querySelector('.scramble-export-section');
+            if (section) {
+                section.classList.remove('open');
+            }
+            if (this.elements.scrambleExportToggle) {
+                this.elements.scrambleExportToggle.setAttribute('aria-expanded', 'false');
             }
         }
         

@@ -360,16 +360,25 @@
 
         <!-- 打乱公式导出区 -->
         <div class="scramble-export-section">
-            <div class="export-count-label">数量：</div>
-            <select class="export-count-select" id="generateCount">
-                <option value="5">5</option>
-                <option value="12">12</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-            <div class="start-id-label">起始编号：</div>
-            <input type="number" class="start-id-input" id="startNumber" value="1" min="1">
-            <button class="export-scramble-btn" id="exportScramblesBtn">导出打乱公式</button>
+            <button class="scramble-export-toggle icon-btn" id="scrambleExportToggle" title="导出打乱公式" aria-label="导出打乱公式" aria-expanded="false">
+                <i class="fas fa-file-export" aria-hidden="true"></i>
+            </button>
+            <div class="scramble-export-panel" id="scrambleExportPanel">
+                <label class="scramble-export-field">
+                    <span class="export-count-label">数量：</span>
+                    <select class="export-count-select" id="generateCount">
+                        <option value="5">5</option>
+                        <option value="12">12</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </label>
+                <label class="scramble-export-field">
+                    <span class="start-id-label">起始编号：</span>
+                    <input type="number" class="start-id-input" id="startNumber" value="1" min="1">
+                </label>
+                <button class="export-scramble-btn" id="exportScramblesBtn">导出打乱公式</button>
+            </div>
         </div>
 
         <!-- 音频元素（用于声音反馈） -->
