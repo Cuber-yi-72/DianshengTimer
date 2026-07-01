@@ -5676,27 +5676,15 @@
 
         // 动态调整打乱公式区域高度
         adjustScrambleSectionHeight() {
-            const scrambleControlsSection = document.querySelector('.scramble-controls-section');
             const timerSection = document.querySelector('.timer-main-section');
 
-            if (scrambleControlsSection && timerSection) {
-                // 获取整个打乱控制区域的实际高度（包括控制选项和打乱公式）
-                const scrambleControlsHeight = scrambleControlsSection.offsetHeight;
+            if (timerSection) {
+                const timerTop = 75;
+                timerSection.style.top = timerTop + 'px';
 
-                // 打乱控制区的top位置
-                const scrambleTop = 75;
-
-                // 打乱区和计时区之间的间距
-                const spacing = 12;
-
-                // 计算计时区的新top值
-                const newTimerTop = scrambleTop + scrambleControlsHeight + spacing;
-                timerSection.style.top = newTimerTop + 'px';
-
-                // 调整计时区的高度
                 const containerHeight = document.querySelector('.container').offsetHeight;
                 const bottomSectionHeight = 80; // 打乱公式导出区的高度
-                const newTimerHeight = containerHeight - newTimerTop - bottomSectionHeight - 40;
+                const newTimerHeight = containerHeight - timerTop - bottomSectionHeight - 40;
                 timerSection.style.height = Math.max(320, newTimerHeight) + 'px';
             }
         }

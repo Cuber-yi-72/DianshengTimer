@@ -290,7 +290,7 @@
             position: absolute;
             top: 1.25rem;
             left: 17.5rem;
-            width: 18rem;
+            width: 14rem;
             min-width: 100px;
             z-index: 20;
         }
@@ -392,11 +392,11 @@
 
         .prev-scramble-btn, .next-scramble-btn {
             position: absolute;
-            top: 1.5625rem;
-            width: 2.5rem;
-            min-width: 2.5rem;
-            height: 2.5rem;
-            min-height: 36px;
+            top: 1.25rem;
+            width: 2.625rem;
+            min-width: 2.625rem;
+            height: 2.625rem;
+            min-height: 2.625rem;
             font-size: 0.875rem;
             font-weight: 500;
         }
@@ -410,11 +410,11 @@
         }
 
         .prev-scramble-btn {
-            left: 36.25rem;
+            left: 32.25rem;
         }
 
         .next-scramble-btn {
-            left: 39.25rem;
+            left: 35.25rem;
         }
 
         .prev-scramble-btn:disabled, .next-scramble-btn:disabled {
@@ -425,25 +425,23 @@
         /* ===== 打乱控制选项和公式区 ===== */
         .scramble-controls-section {
             position: absolute;
-            top: 4.6875rem;
+            top: calc(4.6875rem + 1.5rem);
             left: 17.5rem;
             width: calc(100% - 18.75rem);
             min-width: 300px;
-            background-color: var(--bg-card);
-            border-radius: 0.9375rem;
-            padding: 0.9375rem;
+            padding: 0 2.25rem;
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
-            box-shadow: var(--shadow-primary);
             transition: all var(--transition-normal);
             height: auto;
             overflow: visible;
             margin-bottom: 0.75rem;
+            z-index: 3;
         }
 
         .scramble-controls-section:hover {
-            box-shadow: var(--shadow-glow);
+            box-shadow: none;
         }
 
         .scramble-controls {
@@ -522,8 +520,10 @@
         }
 
         .coordinate-scramble-btn {
-            min-width: 6rem;
+            width: auto;
+            min-width: 0;
             height: 32px;
+            padding: 0 1rem;
             font-size: 12px;
             margin-left: 8px; /* 与复制按钮之间留出间距 */
         }
@@ -817,18 +817,19 @@
         /* ===== 计时区 ===== */
         .timer-main-section {
             position: absolute;
-            top: calc(4.6875rem + 13.75rem + 0.75rem);
+            top: 4.6875rem;
             left: 17.5rem;
             width: calc(100% - 18.75rem);
             height: auto;
             background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 0.9375rem;
             display: flex;
             gap: 1.25rem;
-            padding: 1.25rem;
+            padding: calc(5.5rem + 1.875rem) 1.25rem 1.25rem;
             box-shadow: var(--shadow-primary);
             transition: all var(--transition-normal);
-            min-height: 20rem;
+            min-height: 34.5rem;
             min-width: 300px;
         }
 
@@ -1437,19 +1438,19 @@
                 position: absolute !important;
                 top: 1.25rem !important;
                 left: 17.5rem !important;
-                width: 18rem !important;
+                width: 14rem !important;
             }
             
             .prev-scramble-btn {
                 position: absolute !important;
-                top: 1.5625rem !important;
-                left: 36.25rem !important;
+                top: 1.25rem !important;
+                left: 32.25rem !important;
             }
 
             .next-scramble-btn {
                 position: absolute !important;
-                top: 1.5625rem !important;
-                left: 39.25rem !important;
+                top: 1.25rem !important;
+                left: 35.25rem !important;
             }
             
             .stats-container-mobile {
@@ -1552,7 +1553,7 @@
             }
 
             .cube-type-control {
-                width: 150px;
+                width: 13rem;
             }
 
             .custom-cube-select {
@@ -1564,6 +1565,7 @@
                 width: 35px;
                 min-width: 35px;
                 height: 35px;
+                min-height: 35px;
                 font-size: 12px;
             }
 
@@ -1589,9 +1591,9 @@
             }
 
             .scramble-controls-section {
-                top: 75px;
+                top: 91px;
                 max-height: 160px;
-                padding: 12px;
+                padding: 0 24px;
                 margin-bottom: 12px;
             }
 
@@ -1605,9 +1607,10 @@
             }
 
             .timer-main-section {
-                top: calc(75px + 160px + 12px);
-                height: calc(100% - (75px + 160px + 12px) - 70px);
-                min-height: 280px;
+                top: 75px;
+                height: calc(100% - 75px - 70px);
+                min-height: 420px;
+                padding-top: calc(60px + 40px);
             }
 
             .current-stats-card, .best-stats-card {
@@ -1965,9 +1968,10 @@
                 position: absolute;
                 top: 48px;  /* 放在复制按钮下方 */
                 right: 10px; /* 与复制按钮对齐 */
-                width: 58px;
-                min-width: 58px;
+                width: auto;
+                min-width: 0;
                 height: 32px;
+                padding: 0 12px;
                 font-size: 11px;
                 margin-left: 0; /* 重置之前设置的边距 */
             }
