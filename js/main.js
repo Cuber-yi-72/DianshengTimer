@@ -225,7 +225,7 @@
     }
 
     function updateQuickSettingsButtons() {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
         const themeBtn = document.getElementById('settingsBtn');
         const languageBtn = document.getElementById('languageToggleBtn');
 
@@ -245,7 +245,7 @@
     }
 
     function toggleThemeDirectly() {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
         setTheme(currentTheme === 'dark' ? 'light' : 'dark');
     }
 
@@ -361,7 +361,7 @@
         initCustomCubeSelect();
 
         // 恢复保存的主题
-        const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'dark');
+        const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'light');
         if (savedTheme) {
             setTheme(savedTheme);
         }
@@ -3853,7 +3853,7 @@
     class CubeTimerApp {
         constructor() {
             this.state = {
-                theme: 'dark',
+                theme: 'light',
                 currentCubeType: 'corner',
                 isRotating: false,
                 currentScramble: '',
@@ -5243,7 +5243,7 @@
         }
 
         toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             
             document.documentElement.setAttribute('data-theme', newTheme);
@@ -5265,7 +5265,7 @@
         }
 
         restoreTheme() {
-            const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'dark');
+            const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'light');
             document.documentElement.setAttribute('data-theme', savedTheme);
             document.body.setAttribute('data-theme', savedTheme);
             updateLogoForTheme(savedTheme);
