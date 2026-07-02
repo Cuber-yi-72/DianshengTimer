@@ -1,68 +1,68 @@
 /* ===== 主题变量 ===== */
         :root {
             /* 深色模式 (默认) */
-            --bg-color: #1a1a2e;
-            --bg-darker: #16213e;
-            --bg-card: rgba(255, 255, 255, 0.08);
-            --bg-hover: rgba(255, 255, 255, 0.12);
-            --bg-light: #212435;
+            --bg-color: #0F172A;
+            --bg-darker: #020617;
+            --bg-card: rgba(148, 163, 184, 0.10);
+            --bg-hover: rgba(148, 163, 184, 0.12);
+            --bg-light: #111827;
 
-            --text-primary: #e6e6e6;
-            --text-secondary: #b0b0b0;
-            --text-muted: #888888;
+            --text-primary: #E5E7EB;
+            --text-secondary: #CBD5E1;
+            --text-muted: #94A3B8;
 
-            --border-color: rgba(255, 255, 255, 0.1);
-            --border-medium: rgba(255, 255, 255, 0.2);
+            --border-color: rgba(148, 163, 184, 0.18);
+            --border-medium: rgba(148, 163, 184, 0.32);
 
-            --primary-color: #4cc9f0;
-            --primary-dark: #4361ee;
-            --secondary-color: #a5b4fc;
-            --accent-color: #f0b44c;
-            --danger-color: #f05454;
-            --success-color: #4caf50;
+            --primary-color: #7DD3FC;
+            --primary-dark: #0EA5E9;
+            --secondary-color: #94A3B8;
+            --accent-color: #FBBF24;
+            --danger-color: #F472B6;
+            --success-color: #2DD4BF;
 
-            --timer-color: #ff6b6b;
-            --inspecting-color: #ffd166;
-            --ready-color: #4caf50;
+            --timer-color: #F472B6;
+            --inspecting-color: #FBBF24;
+            --ready-color: #2DD4BF;
 
             --shadow-primary: 0 2px 8px rgba(0, 0, 0, 0.18);
-            --shadow-glow: 0 0 0 2px rgba(76, 201, 240, 0.18);
+            --shadow-glow: 0 0 0 1px rgba(125, 211, 252, 0.18);
 
             --transition-fast: 0.15s ease;
             --transition-normal: 0.25s ease;
 
             /* 魔方类型按钮 */
-            --cube-type-bg: #4cc9f0;
-            --cube-type-hover: #43b8e0;
+            --cube-type-bg: #0EA5E9;
+            --cube-type-hover: #0284C7;
             --cube-type-text: #ffffff;
 
             /* 功能按钮 */
-            --btn-primary-bg: #4cc9f0;
-            --btn-primary-hover: #4361ee;
+            --btn-primary-bg: #0EA5E9;
+            --btn-primary-hover: #0284C7;
             --btn-secondary-bg: var(--bg-card);
             --btn-secondary-hover: var(--bg-hover);
-            --btn-success-bg: #4caf50;
-            --btn-success-hover: #43a047;
-            --btn-danger-bg: #f05454;
-            --btn-danger-hover: #e63946;
-            --btn-warning-bg: #ffd166;
-            --btn-warning-hover: #f4a261;
+            --btn-success-bg: #2DD4BF;
+            --btn-success-hover: #14B8A6;
+            --btn-danger-bg: #F472B6;
+            --btn-danger-hover: #EC4899;
+            --btn-warning-bg: #FBBF24;
+            --btn-warning-hover: #F59E0B;
 
             /* 计时器颜色 */
-            --timer-default: #ff6b6b;
-            --timer-ready: #4caf50;
-            --timer-inspecting: #ffd166;
-            --timer-running: #ff6b6b;
+            --timer-default: #F472B6;
+            --timer-ready: #2DD4BF;
+            --timer-inspecting: #FBBF24;
+            --timer-running: #F472B6;
 
             /* 公式子样式 */
-            --formula-layer-text: #4cc9f0;
-            --formula-layer-bg: #0f3460;
-            --formula-corner-text: #f72585;
-            --formula-corner-bg: #2a0f1b;
-            --formula-zero-text: #72efdd;
-            --formula-zero-bg: #0f3438;
-            --formula-flip-text: #faa31b;
-            --formula-flip-bg: #3a260f;
+            --formula-layer-text: #BAE6FD;
+            --formula-layer-bg: rgba(30, 64, 92, 0.58);
+            --formula-corner-text: #F9A8D4;
+            --formula-corner-bg: rgba(131, 24, 67, 0.22);
+            --formula-zero-text: #99F6E4;
+            --formula-zero-bg: rgba(19, 78, 74, 0.34);
+            --formula-flip-text: #FBBF24;
+            --formula-flip-bg: rgba(245, 158, 11, 0.14);
 
             /* 转角三阶面颜色 */
             --face-U: #FFFFFF;
@@ -76,66 +76,66 @@
         /* 浅色模式 */
         [data-theme="light"] {
             --bg-color: #f8f9fa;
-            --bg-darker: #e9ecef;
+            --bg-darker: #e5e7eb;
             --bg-card: rgba(255, 255, 255, 0.9);
-            --bg-hover: rgba(0, 0, 0, 0.05);
+            --bg-hover: rgba(209, 213, 219, 0.32);
             --bg-light: #ffffff;
 
             --text-primary: #212529;
             --text-secondary: #495057;
             --text-muted: #6c757d;
 
-            --border-color: rgba(0, 0, 0, 0.1);
-            --border-medium: rgba(0, 0, 0, 0.2);
+            --border-color: rgba(209, 213, 219, 0.85);
+            --border-medium: rgba(148, 163, 184, 0.6);
 
-            --primary-color: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary-color: #7209b7;
-            --accent-color: #f8961e;
+            --primary-color: #0EA5E9;
+            --primary-dark: #0284C7;
+            --secondary-color: #64748B;
+            --accent-color: #F59E0B;
             --danger-color: #e63946;
             --success-color: #2a9d8f;
 
             --timer-color: #e63946;
-            --inspecting-color: #f4a261;
+            --inspecting-color: #F59E0B;
             --ready-color: #2a9d8f;
 
             --shadow-primary: 0 2px 8px rgba(0, 0, 0, 0.06);
-            --shadow-glow: 0 0 0 2px rgba(67, 97, 238, 0.14);
+            --shadow-glow: 0 0 0 2px rgba(14, 165, 233, 0.16);
 
             --transition-fast: 0.15s ease;
             --transition-normal: 0.25s ease;
 
             /* 魔方类型按钮 */
-            --cube-type-bg: #4361ee;
-            --cube-type-hover: #3a56d4;
+            --cube-type-bg: #0EA5E9;
+            --cube-type-hover: #0284C7;
             --cube-type-text: #ffffff;
 
             /* 功能按钮 */
-            --btn-primary-bg: #4361ee;
-            --btn-primary-hover: #3a56d4;
+            --btn-primary-bg: #0EA5E9;
+            --btn-primary-hover: #0284C7;
             --btn-secondary-bg: var(--bg-card);
             --btn-secondary-hover: var(--bg-hover);
             --btn-success-bg: #2a9d8f;
             --btn-success-hover: #21867a;
             --btn-danger-bg: #e63946;
             --btn-danger-hover: #c1121f;
-            --btn-warning-bg: #f8961e;
-            --btn-warning-hover: #e07b00;
+            --btn-warning-bg: #F59E0B;
+            --btn-warning-hover: #D97706;
 
             /* 计时器颜色 */
             --timer-default: #e63946;
             --timer-ready: #2a9d8f;
-            --timer-inspecting: #f4a261;
+            --timer-inspecting: #F59E0B;
             --timer-running: #e63946;
 
             /* 公式子样式 */
-            --formula-layer-text: #4361ee;
-            --formula-layer-bg: #e8e8ed;
+            --formula-layer-text: #0369A1;
+            --formula-layer-bg: #E0F2FE;
             --formula-corner-text: #e63946;
             --formula-corner-bg: #fff0f0;
             --formula-zero-text: #2a9d8f;
             --formula-zero-bg: #f0f8e8;
-            --formula-flip-text: #f8961e;
+            --formula-flip-text: #D97706;
             --formula-flip-bg: #fff4e8;
 
             /* 转角三阶面颜色 */
@@ -143,7 +143,7 @@
             --face-D: #FFD700;
             --face-F: #43aa8b;
             --face-B: #577590;
-            --face-L: #f8961e;
+            --face-L: #F59E0B;
             --face-R: #f94144;
         }
 
@@ -266,7 +266,7 @@
         .top-controls-mobile .next-scramble-btn:hover,
         .top-controls-mobile .cube-type-control.open .custom-cube-select {
             background: var(--bg-hover);
-            border-color: rgba(76, 201, 240, 0.35);
+            border-color: rgba(14, 165, 233, 0.35);
             box-shadow: none;
         }
 
@@ -375,7 +375,7 @@
         }
 
         .custom-cube-select:focus-visible {
-            box-shadow: 0 0 0 0.125rem rgba(76, 201, 240, 0.3);
+            box-shadow: 0 0 0 0.125rem rgba(14, 165, 233, 0.3);
         }
 
         .custom-cube-select i {
@@ -503,7 +503,7 @@
         .control-select:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.1);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
         }
 
         /* 打乱公式显示 */
@@ -528,7 +528,7 @@
             white-space: normal;
             word-wrap: break-word;
             font-weight: 500;
-            text-shadow: 0 0 10px rgba(76, 201, 240, 0.15);
+            text-shadow: none;
         }
 
         .scramble-number {
@@ -580,7 +580,7 @@
         /* 大写字母步骤 */
         .scramble-step-upper {
             background-color: var(--formula-layer-bg);
-            color: var(--primary-color);   /* 主色调（蓝色） */
+            color: var(--formula-layer-text);   /* 主色调（蓝色） */
         }
 
         /* 小写字母步骤 */
@@ -641,12 +641,12 @@
         }
 
         .stat-value {
-            color: var(--primary-color);
+            color: var(--formula-layer-text);
             font-size: 0.875rem;
             font-weight: bold;
             font-family: 'Courier New', monospace;
             text-align: right;
-            text-shadow: 0 0 0.625rem rgba(76, 201, 240, 0.12);
+            text-shadow: none;
             white-space: nowrap;
         }
 
@@ -713,7 +713,7 @@
         .history-export-btn:hover {
             border-color: transparent;
             color: var(--primary-color);
-            background-color: rgba(76, 201, 240, 0.12);
+            background-color: var(--bg-hover);
             box-shadow: none;
         }
 
@@ -742,9 +742,9 @@
         .history-times-list {
             flex: 1;
             overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
             border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: var(--bg-card);
             margin-bottom: 10px;
             padding: 5px;
         }
@@ -754,7 +754,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid var(--border-color);
             font-size: 12px;
             line-height: 1.4;
             border-radius: 5px;
@@ -762,7 +762,7 @@
         }
 
         .history-time-item:hover {
-            background-color: rgba(76, 201, 240, 0.1);
+            background-color: var(--bg-hover);
         }
 
         .history-time-item:last-child {
@@ -779,7 +779,7 @@
             color: var(--primary-color);
             font-family: 'Courier New', monospace;
             font-weight: bold;
-            text-shadow: 0 0 10px rgba(76, 201, 240, 0.2);
+            text-shadow: none;
         }
 
         .history-time-penalty {
@@ -882,22 +882,22 @@
             font-weight: bold;
             color: var(--text-primary); /* 改为调用主题变量 */
             transition: color var(--transition-normal);
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            text-shadow: none;
         }
 
         .timer-number.timer-ready {
             color: var(--timer-ready);
-            text-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
+            text-shadow: 0 0 14px rgba(45, 212, 191, 0.16);
         }
 
         .timer-number.timer-inspection {
             color: var(--timer-inspecting);
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            text-shadow: 0 0 14px rgba(251, 191, 36, 0.16);
         }
 
         .timer-number.timer-running {
             color: var(--timer-running);
-            text-shadow: 0 0 20px rgba(80, 200, 120, 0.3);
+            text-shadow: 0 0 14px rgba(244, 114, 182, 0.14);
         }
 
         .timer-number.timer-pressed {
@@ -928,7 +928,7 @@
 
         .start-timer-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.14);
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.14);
         }
 
         .start-timer-btn:active {
@@ -1107,7 +1107,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+            background: linear-gradient(135deg, #0F172A 0%, #020617 50%, #0F172A 100%);
             z-index: 99999;
             display: flex;
             flex-direction: column;
@@ -1147,9 +1147,7 @@
             font-weight: 800;
             color: var(--primary-color);
             margin-bottom: 30px;
-            text-shadow: 0 0 40px rgba(76, 201, 240, 0.4),
-                         0 0 80px rgba(76, 201, 240, 0.2),
-                         0 4px 20px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 4px 18px rgba(0, 0, 0, 0.38);
             transition: all var(--transition-normal);
             -webkit-touch-callout: none;
             -webkit-user-select: none;
@@ -1187,17 +1185,13 @@
         }
 
         .fullscreen-display.inspecting {
-            color: #ffd700;
-            text-shadow: 0 0 40px rgba(255, 215, 0, 0.4),
-                         0 0 80px rgba(255, 215, 0, 0.2),
-                         0 4px 20px rgba(0, 0, 0, 0.5);
+            color: var(--timer-inspecting);
+            text-shadow: 0 4px 18px rgba(0, 0, 0, 0.38);
         }
 
         .fullscreen-display.ready-to-start {
-            color: #64ffda;
-            text-shadow: 0 0 40px rgba(100, 255, 218, 0.4),
-                         0 0 80px rgba(100, 255, 218, 0.2),
-                         0 4px 20px rgba(0, 0, 0, 0.5);
+            color: var(--timer-ready);
+            text-shadow: 0 4px 18px rgba(0, 0, 0, 0.38);
             animation: pulse-ready 1s infinite;
         }
 
@@ -1235,7 +1229,7 @@
         }
 
         [data-theme="light"] .fullscreen-hint {
-            color: #f8961e;
+            color: var(--accent-color);
             text-shadow: 0 0 15px rgba(248, 150, 30, 0.5);
         }
 
@@ -2233,13 +2227,13 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(76, 201, 240, 0.3);
+            background: rgba(148, 163, 184, 0.36);
             border-radius: 4px;
             transition: background var(--transition-fast);
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(76, 201, 240, 0.5);
+            background: rgba(148, 163, 184, 0.52);
         }
         
         /* 坐标弹出层样式 */
