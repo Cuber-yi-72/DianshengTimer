@@ -6,15 +6,8 @@
         init() {
             this.elements = {
                 // 设置相关
-                settingsModal: document.getElementById('settingsModal'),
                 settingsBtn: document.getElementById('settingsBtn'),
-                settingsOverlay: document.getElementById('settingsOverlay'),
-                settingsCloseBtn: document.getElementById('settingsCloseBtn'),
-                themeDarkBtn: document.getElementById('themeDarkBtn'),
-                themeLightBtn: document.getElementById('themeLightBtn'),
-                langSCBtn: document.getElementById('langSCBtn'),
-                langTCBtn: document.getElementById('langTCBtn'),
-                langENBtn: document.getElementById('langENBtn'),
+                languageToggleBtn: document.getElementById('languageToggleBtn'),
 
                 // 计时器相关
                 timerDisplay: document.getElementById('timerDisplay'),
@@ -28,6 +21,9 @@
 
                 // 魔方类型和控制
                 cubeTypeSelect: document.getElementById('cubeTypeSelect'),
+                cubeTypeSelectButton: document.getElementById('cubeTypeSelectButton'),
+                cubeTypeSelectLabel: document.getElementById('cubeTypeSelectLabel'),
+                cubeTypeMenu: document.getElementById('cubeTypeMenu'),
                 prevScrambleBtn: document.getElementById('prevScrambleBtn'),
                 nextScrambleBtn: document.getElementById('nextScrambleBtn'),
 
@@ -57,6 +53,7 @@
                 // 导出
                 generateCount: document.getElementById('generateCount'),
                 startNumber: document.getElementById('startNumber'),
+                scrambleExportToggle: document.getElementById('scrambleExportToggle'),
                 exportScramblesBtn: document.getElementById('exportScramblesBtn')
             };
         },
@@ -89,7 +86,7 @@
         if (headerTitle) headerTitle.textContent = t('headerTitle');
 
         // 更新设置按钮
-        if (cache.settingsBtn) cache.settingsBtn.title = t('settings');
+        updateQuickSettingsButtons();
 
         // 更新魔方类型选择器
         if (cache.cubeTypeSelect) {
@@ -99,36 +96,47 @@
             cache.cubeTypeSelect.options[3].textContent = t('twinOctahedron2x2');
             cache.cubeTypeSelect.options[4].textContent = t('squareCircle4');
             cache.cubeTypeSelect.options[5].textContent = t('squareCircle8');
+            updateCustomCubeSelect();
         }
 
         // 更新上一条/下一条按钮
-        if (cache.prevScrambleBtn) cache.prevScrambleBtn.textContent = t('prevScramble');
-        if (cache.nextScrambleBtn) cache.nextScrambleBtn.textContent = t('nextScramble');
+        if (cache.prevScrambleBtn) {
+            cache.prevScrambleBtn.title = t('prevScramble');
+            cache.prevScrambleBtn.setAttribute('aria-label', t('prevScramble'));
+        }
+        if (cache.nextScrambleBtn) {
+            cache.nextScrambleBtn.title = t('nextScramble');
+            cache.nextScrambleBtn.setAttribute('aria-label', t('nextScramble'));
+        }
 
         // 更新循环次数
         if (cache.cycleSelect) {
             }
 
         // 更新复制按钮
-        if (cache.copyBtn) cache.copyBtn.textContent = t('copy');
+        if (cache.copyBtn) {
+            cache.copyBtn.title = t('copy');
+            cache.copyBtn.setAttribute('aria-label', t('copy'));
+        }
 
         // 更新坐标按钮
         if (cache.coordinateBtn) cache.coordinateBtn.textContent = t('coordinate');
 
-        // 更新统计卡片标题
+        // 更新统计区域标题
         const currentStatsTitle = document.querySelector('.current-stats-card .stats-card-title');
-        const bestStatsTitle = document.querySelector('.best-stats-card .stats-card-title');
-        if (currentStatsTitle) currentStatsTitle.textContent = t('currentStats');
-        if (bestStatsTitle) bestStatsTitle.textContent = t('bestStats');
+        if (currentStatsTitle) currentStatsTitle.textContent = t('statistics');
 
         // 更新历史成绩
         const historyTitle = document.querySelector('.history-times-title span');
         if (historyTitle) historyTitle.textContent = t('history');
         if (cache.historyResetBtn) {
-            cache.historyResetBtn.textContent = t('reset');
             cache.historyResetBtn.title = t('clearData');
+            cache.historyResetBtn.setAttribute('aria-label', t('clearData'));
         }
-        if (cache.exportBestAo5Btn) cache.exportBestAo5Btn.textContent = t('exportAll');
+        if (cache.exportBestAo5Btn) {
+            cache.exportBestAo5Btn.title = t('exportAll');
+            cache.exportBestAo5Btn.setAttribute('aria-label', t('exportAll'));
+        }
 
         // 更新历史记录列表
         if (cache.historyTimesList && cache.historyTimesList.innerHTML.includes('暂无时间记录')) {
@@ -168,6 +176,10 @@
         if (exportCountLabel) exportCountLabel.textContent = t('exportCount');
         if (startIdLabel) startIdLabel.textContent = t('startId');
         if (cache.exportScramblesBtn) cache.exportScramblesBtn.textContent = t('exportScrambles');
+        if (cache.scrambleExportToggle) {
+            cache.scrambleExportToggle.title = t('exportScrambles');
+            cache.scrambleExportToggle.setAttribute('aria-label', t('exportScrambles'));
+        }
 
         // 更新全屏提示
         if (cache.fullscreenInfo) cache.fullscreenInfo.textContent = t('observing');
@@ -203,92 +215,139 @@
         updateAllText();
     }
 
-    // 更新设置弹窗中的文本
+    function updateLogoForTheme(theme) {
+        const logo = document.querySelector('.header-logo');
+        if (!logo) return;
+
+        logo.src = theme === 'dark'
+            ? './pictures/diansheng-white.png'
+            : './pictures/diansheng.png';
+    }
+
+    function updateQuickSettingsButtons() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const themeBtn = document.getElementById('settingsBtn');
+        const languageBtn = document.getElementById('languageToggleBtn');
+
+        if (themeBtn) {
+            const icon = themeBtn.querySelector('i');
+            if (icon) {
+                icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+            themeBtn.title = currentTheme === 'dark' ? t('switchToLight') : t('switchToDark');
+            themeBtn.setAttribute('aria-label', themeBtn.title);
+        }
+
+        if (languageBtn) {
+            languageBtn.title = t('language');
+            languageBtn.setAttribute('aria-label', t('language'));
+        }
+    }
+
+    function toggleThemeDirectly() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    }
+
+    function toggleLanguageDirectly() {
+        const languages = ['zh-CN', 'zh-TW', 'en'];
+        const currentIndex = languages.indexOf(currentLanguage);
+        const nextLang = languages[(currentIndex + 1) % languages.length];
+        setLanguage(nextLang);
+    }
+
+    function updateCustomCubeSelect() {
+        const select = document.getElementById('cubeTypeSelect');
+        const label = document.getElementById('cubeTypeSelectLabel');
+        const menu = document.getElementById('cubeTypeMenu');
+        if (!select || !label || !menu) return;
+
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption) {
+            label.textContent = selectedOption.textContent;
+        }
+
+        Array.from(menu.children).forEach(item => {
+            item.classList.toggle('active', item.dataset.value === select.value);
+            item.setAttribute('aria-selected', item.dataset.value === select.value ? 'true' : 'false');
+            const option = Array.from(select.options).find(opt => opt.value === item.dataset.value);
+            if (option) item.textContent = option.textContent;
+        });
+    }
+
+    function closeCustomCubeSelect() {
+        const control = document.getElementById('cubeTypeControl');
+        const button = document.getElementById('cubeTypeSelectButton');
+        if (!control || !button) return;
+
+        control.classList.remove('open');
+        button.setAttribute('aria-expanded', 'false');
+    }
+
+    function initCustomCubeSelect() {
+        const select = document.getElementById('cubeTypeSelect');
+        const control = document.getElementById('cubeTypeControl');
+        const button = document.getElementById('cubeTypeSelectButton');
+        const menu = document.getElementById('cubeTypeMenu');
+        if (!select || !control || !button || !menu) return;
+
+        menu.innerHTML = '';
+        Array.from(select.options).forEach(option => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'cube-type-menu-item';
+            item.dataset.value = option.value;
+            item.setAttribute('role', 'option');
+            item.textContent = option.textContent;
+            item.addEventListener('click', () => {
+                select.value = option.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                updateCustomCubeSelect();
+                closeCustomCubeSelect();
+            });
+            menu.appendChild(item);
+        });
+
+        button.addEventListener('click', () => {
+            const isOpen = control.classList.toggle('open');
+            button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', event => {
+            if (!control.contains(event.target)) closeCustomCubeSelect();
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeCustomCubeSelect();
+        });
+
+        updateCustomCubeSelect();
+    }
+
+    // 更新顶部快捷设置按钮状态
     function updateSettingsModalText() {
-        document.getElementById('settingsTitle').textContent = t('settings');
-        document.getElementById('themeTitle').textContent = t('theme');
-        document.getElementById('languageTitle').textContent = t('language');
-        document.getElementById('darkThemeText').textContent = t('darkTheme');
-        document.getElementById('lightThemeText').textContent = t('lightTheme');
-        document.getElementById('langSCText').textContent = t('languageSC');
-        document.getElementById('langTCText').textContent = t('languageTC');
-        document.getElementById('langENText').textContent = t('languageEN');
-        
-        // 更新当前选中的主题和语言
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        document.querySelectorAll('.theme-option-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.theme === currentTheme);
-        });
-        
-        document.querySelectorAll('.lang-option-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lang === currentLanguage);
-        });
+        updateQuickSettingsButtons();
     }
 
-    // 显示设置弹窗
-    function showSettingsModal() {
-        const modal = document.getElementById('settingsModal');
-        if (modal) {
-            modal.classList.add('active');
-            updateSettingsModalText();
-        }
-    }
-
-    // 隐藏设置弹窗
-    function hideSettingsModal() {
-        const modal = document.getElementById('settingsModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
-    }
-
-    // 初始化设置弹窗事件
+    // 初始化快捷设置按钮事件
     function initSettingsModal() {
         const settingsBtn = document.getElementById('settingsBtn');
-        const settingsOverlay = document.getElementById('settingsOverlay');
-        const settingsCloseBtn = document.getElementById('settingsCloseBtn');
         
-        // 打开设置弹窗
         if (settingsBtn) {
-            settingsBtn.addEventListener('click', showSettingsModal);
+            settingsBtn.addEventListener('click', toggleThemeDirectly);
         }
-        
-        // 关闭设置弹窗
-        if (settingsOverlay) {
-            settingsOverlay.addEventListener('click', hideSettingsModal);
+
+        const languageToggleBtn = document.getElementById('languageToggleBtn');
+        if (languageToggleBtn) {
+            languageToggleBtn.addEventListener('click', toggleLanguageDirectly);
         }
-        if (settingsCloseBtn) {
-            settingsCloseBtn.addEventListener('click', hideSettingsModal);
-        }
-        
-        // ESC键关闭弹窗
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                hideSettingsModal();
-            }
-        });
-        
-        // 主题切换
-        document.querySelectorAll('.theme-option-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const theme = btn.dataset.theme;
-                setTheme(theme);
-            });
-        });
-        
-        // 语言切换
-        document.querySelectorAll('.lang-option-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const lang = btn.dataset.lang;
-                setLanguage(lang);
-            });
-        });
     }
 
     // 设置主题（使用StorageHelper）
     function setTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         document.body.setAttribute('data-theme', theme);
+        updateLogoForTheme(theme);
         StorageHelper.setItem(APP_CONFIG.STORAGE_KEYS.THEME, theme);
         updateSettingsModalText();
     }
@@ -299,9 +358,10 @@
         DOM_CACHE.init();
 
         initSettingsModal();
+        initCustomCubeSelect();
 
         // 恢复保存的主题
-        const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'dark');
+        const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'light');
         if (savedTheme) {
             setTheme(savedTheme);
         }
@@ -3793,7 +3853,7 @@
     class CubeTimerApp {
         constructor() {
             this.state = {
-                theme: 'dark',
+                theme: 'light',
                 currentCubeType: 'corner',
                 isRotating: false,
                 currentScramble: '',
@@ -3997,6 +4057,7 @@
             // 导出功能元素
             this.elements.generateCount = getEl('generateCount');
             this.elements.startNumber = getEl('startNumber');
+            this.elements.scrambleExportToggle = getEl('scrambleExportToggle', true);
             this.elements.exportScramblesBtn = getEl('exportScramblesBtn');
             this.elements.scramblesList = getEl('scramblesList', true); // 可选元素
 
@@ -4023,18 +4084,8 @@
             this.elements.cubeTypeSelect.addEventListener('change', () => {
                 const cubeType = this.elements.cubeTypeSelect.value;
                 this.switchToCubeType(cubeType);
+                updateCustomCubeSelect();
             });
-            
-            // 主题切换事件
-            if (this.elements.themeToggleBtn) {
-                this.elements.themeToggleBtn.addEventListener('click', () => {
-                    // 打开设置模态框
-                    const settingsModal = document.getElementById('settingsModal');
-                    if (settingsModal) {
-                        settingsModal.classList.add('active');
-                    }
-                });
-            }
             
             // 声音开关事件
             if (this.elements.soundBtn) {
@@ -4318,8 +4369,14 @@
             
             // 生成打乱公式相关事件
             // this.elements.generateMultipleBtn.addEventListener('click', () => this.generateMultipleScrambles()); // 不再需要
+            if (this.elements.scrambleExportToggle) {
+                this.elements.scrambleExportToggle.addEventListener('click', () => this.toggleScrambleExportPanel());
+            }
             if (this.elements.exportScramblesBtn) {
-                this.elements.exportScramblesBtn.addEventListener('click', () => this.exportScrambles());
+                this.elements.exportScramblesBtn.addEventListener('click', () => {
+                    this.exportScrambles();
+                    this.closeScrambleExportPanel();
+                });
             }
             
             // 键盘事件监听 - 使用capture阶段确保事件优先处理
@@ -4682,6 +4739,7 @@
             const statsContainer = document.querySelector('.stats-container-mobile');
             const closeBtn = document.querySelector('.stats-close-btn');
             if (statsContainer) {
+                statsContainer.classList.remove('closing');
                 statsContainer.classList.add('show');
             }
             if (closeBtn) {
@@ -4693,10 +4751,36 @@
             const statsContainer = document.querySelector('.stats-container-mobile');
             const closeBtn = document.querySelector('.stats-close-btn');
             if (statsContainer) {
+                statsContainer.classList.add('closing');
                 statsContainer.classList.remove('show');
+                window.setTimeout(() => {
+                    statsContainer.classList.remove('closing');
+                }, 160);
             }
             if (closeBtn) {
-                closeBtn.classList.remove('show');
+                window.setTimeout(() => {
+                    closeBtn.classList.remove('show');
+                }, 120);
+            }
+        }
+
+        toggleScrambleExportPanel() {
+            const section = document.querySelector('.scramble-export-section');
+            if (!section) return;
+
+            const isOpen = section.classList.toggle('open');
+            if (this.elements.scrambleExportToggle) {
+                this.elements.scrambleExportToggle.setAttribute('aria-expanded', String(isOpen));
+            }
+        }
+
+        closeScrambleExportPanel() {
+            const section = document.querySelector('.scramble-export-section');
+            if (section) {
+                section.classList.remove('open');
+            }
+            if (this.elements.scrambleExportToggle) {
+                this.elements.scrambleExportToggle.setAttribute('aria-expanded', 'false');
             }
         }
         
@@ -4785,6 +4869,7 @@
                     // 更新魔方选择下拉菜单状态
         
                     this.elements.cubeTypeSelect.value = this.state.currentCubeType;
+                    updateCustomCubeSelect();
         
         
         
@@ -5061,6 +5146,7 @@
         applyTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             document.body.setAttribute('data-theme', theme);
+            updateLogoForTheme(theme);
             document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === theme));
         }
         
@@ -5157,11 +5243,12 @@
         }
 
         toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             
             document.documentElement.setAttribute('data-theme', newTheme);
             document.body.setAttribute('data-theme', newTheme);
+            updateLogoForTheme(newTheme);
             
             // 更新按钮图标
             const icon = this.elements.themeToggleBtn.querySelector('i');
@@ -5178,9 +5265,10 @@
         }
 
         restoreTheme() {
-            const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'dark');
+            const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'light');
             document.documentElement.setAttribute('data-theme', savedTheme);
             document.body.setAttribute('data-theme', savedTheme);
+            updateLogoForTheme(savedTheme);
         }
         
         updateSoundButton() {
@@ -5631,24 +5719,23 @@
             const scrambleControlsSection = document.querySelector('.scramble-controls-section');
             const timerSection = document.querySelector('.timer-main-section');
 
-            if (scrambleControlsSection && timerSection) {
-                // 获取整个打乱控制区域的实际高度（包括控制选项和打乱公式）
-                const scrambleControlsHeight = scrambleControlsSection.offsetHeight;
+            if (timerSection) {
+                if (window.innerWidth <= 768) {
+                    timerSection.style.top = '';
+                    timerSection.style.height = '';
+                    if (scrambleControlsSection) {
+                        const mobileOffset = scrambleControlsSection.offsetHeight + 32;
+                        timerSection.style.setProperty('--mobile-scramble-offset', `${mobileOffset}px`);
+                    }
+                    return;
+                }
 
-                // 打乱控制区的top位置
-                const scrambleTop = 75;
+                const timerTop = 92;
+                timerSection.style.top = timerTop + 'px';
 
-                // 打乱区和计时区之间的间距
-                const spacing = 12;
-
-                // 计算计时区的新top值
-                const newTimerTop = scrambleTop + scrambleControlsHeight + spacing;
-                timerSection.style.top = newTimerTop + 'px';
-
-                // 调整计时区的高度
                 const containerHeight = document.querySelector('.container').offsetHeight;
                 const bottomSectionHeight = 80; // 打乱公式导出区的高度
-                const newTimerHeight = containerHeight - newTimerTop - bottomSectionHeight - 40;
+                const newTimerHeight = containerHeight - timerTop - bottomSectionHeight - 40;
                 timerSection.style.height = Math.max(320, newTimerHeight) + 'px';
             }
         }
@@ -6664,7 +6751,7 @@
  * 格式化时间为HTML格式（用于显示）
  * @param {number|null} seconds - 秒数
  * @param {string} penalty - 惩罚类型（''、'+2'、'DNF'）
- * @returns {string} 格式化后的时间字符串，格式为 mm:ss.000
+ * @returns {string} 格式化后的时间字符串，小于60秒显示 ss.000，超过后显示 m:ss.000
  */
         formatTime(seconds, penalty = '') {
             if (seconds === null) {
@@ -6679,11 +6766,11 @@
             const minutes = Math.floor(numSeconds / 60);
             const secs = numSeconds % 60;
 
-            // 格式化为 mm:ss.000 格式
             const secsStr = secs.toFixed(3);
             const [integerPart, decimalPart = '000'] = secsStr.split('.');
-            const paddedInteger = integerPart.padStart(2, '0');
-            const timeStr = `${minutes}:${paddedInteger}.${decimalPart}`;
+            const timeStr = minutes > 0
+                ? `${minutes}:${integerPart.padStart(2, '0')}.${decimalPart}`
+                : `${parseInt(integerPart, 10)}.${decimalPart}`;
 
             if (penalty === 'DNF') {
                 return '<span class="dnf">DNF</span>';
