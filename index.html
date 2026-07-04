@@ -79,18 +79,16 @@
 
     <!-- 新的UI布局 -->
     <div class="container" role="main">
-        <!-- 移动端顶部控制栏 -->
-        <div class="top-controls-mobile">
-            <!-- 第一行：标题和主题切换 -->
-            <div class="header-row-mobile">
-                <!-- 大标题区 -->
-                <div class="header" role="banner">
-                    <img src="./pictures/diansheng.png" alt="点盛" class="header-logo">
-                    <div class="header-title">魔方计时器</div>
-                </div>
+        <!-- 容器1：LOGO+标题 -->
+        <div class="header-row-mobile">
+            <div class="header" role="banner">
+                <img src="./pictures/diansheng.png" alt="点盛" class="header-logo">
+                <div class="header-title">魔方计时器</div>
             </div>
+        </div>
 
-            <!-- 第二行：魔方类型选择器和导航按钮 -->
+        <!-- 容器2：控制按钮组 -->
+        <div class="controls-group-mobile">
             <div class="controls-row-mobile">
                 <div class="cube-type-control" id="cubeTypeControl">
                     <select class="cube-type-selector" id="cubeTypeSelect" aria-label="选择魔方类型" tabindex="-1">

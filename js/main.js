@@ -2135,8 +2135,8 @@
             
             // 将小角打乱统一放在最后
             if (includeCorners) {
-                // 随机选择0~6个不同的角块移动
-                const numCornerMoves = Math.floor(Math.random() * 7);
+                // 随机选择3~6个不同的角块移动
+                const numCornerMoves = 3 + Math.floor(Math.random() * 4);
                 const shuffledCornerMoves = [...cornerMoves].sort(() => Math.random() - 0.5);
                 const selectedCornerMoves = shuffledCornerMoves.slice(0, numCornerMoves);
                 for (const cornerMove of selectedCornerMoves) {
@@ -2654,7 +2654,7 @@
             let lastUpperAxis = null;
 
             for (let cycle = 0; cycle < this.config.cycles; cycle++) {
-                // Generate 2-4 uppercase moves (R, U, F), no same axis consecutively
+                // 生成2-4个大写动作(R, U, F)，相邻不使用同一轴
                 const upperCount = this.config.upperMin + Math.floor(Math.random() * (this.config.upperMax - this.config.upperMin + 1));
                 for (let i = 0; i < upperCount; i++) {
                     const available = upperAxes.filter(a => a !== lastUpperAxis);
@@ -2664,7 +2664,7 @@
                     lastUpperAxis = axis;
                 }
 
-                // Generate 3-5 different lowercase moves (r, u, f, l, d, b) - no repetition
+                // 生成3-5个不同的小写动作(r, u, f, l, d, b)，不重复
                 const lowerCount = this.config.lowerMin + Math.floor(Math.random() * (this.config.lowerMax - this.config.lowerMin + 1));
                 const selectedLower = this.shuffleArray([...lowerAxes]).slice(0, lowerCount);
                 for (const axis of selectedLower) {
@@ -5714,7 +5714,7 @@
         }
 
 
-        // 动态调整打乱公式区域高度
+        // 动态调整打乱公式区域高度和计时区位置
         adjustScrambleSectionHeight() {
             const scrambleControlsSection = document.querySelector('.scramble-controls-section');
             const timerSection = document.querySelector('.timer-main-section');
@@ -5730,13 +5730,17 @@
                     return;
                 }
 
-                const timerTop = 92;
-                timerSection.style.top = timerTop + 'px';
+                if (scrambleControlsSection) {
+                    // 计时区顶部 = 打乱区底部 + 1rem (16px)
+                    const scrambleBottom = scrambleControlsSection.offsetTop + scrambleControlsSection.offsetHeight;
+                    const timerTop = scrambleBottom + 16;
+                    timerSection.style.top = timerTop + 'px';
 
-                const containerHeight = document.querySelector('.container').offsetHeight;
-                const bottomSectionHeight = 80; // 打乱公式导出区的高度
-                const newTimerHeight = containerHeight - timerTop - bottomSectionHeight - 40;
-                timerSection.style.height = Math.max(320, newTimerHeight) + 'px';
+                    // 计时区高度 = 容器高度 - 计时区顶部 - 1rem (16px)，与历史区底边对齐
+                    const containerHeight = document.querySelector('.container').offsetHeight;
+                    const newTimerHeight = containerHeight - timerTop - 16;
+                    timerSection.style.height = Math.max(320, newTimerHeight) + 'px';
+                }
             }
         }
         
@@ -7206,7 +7210,7 @@
             const dnfCount = windowRecords.length - validTimes.length;
             
             // DNF处理：1次DNF作为最差成绩舍去，2次及以上DNF则整个AO为DNF
-            if (dnfCount >= 2) return null; // DNF
+            if (dnfCount >= 2) return null; // 结果为DNF
             if (dnfCount === 1) {
                 // 1次DNF，移除DNF和1个最差有效成绩
                 const sortedValid = validTimes.map(record => record.time).sort((a, b) => a - b);
