@@ -2639,11 +2639,34 @@
                 upperMin: 2,
                 upperMax: 4,
                 lowerMin: 3,
-                lowerMax: 5
+                lowerMax: 5,
+                maxLianSe: 2,
+                maxAttempts: 500
             };
         }
 
         generate() {
+            let bestScramble = '';
+            let bestLianSe = Infinity;
+
+            for (let attempt = 0; attempt < this.config.maxAttempts; attempt++) {
+                const scramble = this._generateRaw();
+                const lianSe = this._countLianSe(scramble);
+
+                if (lianSe <= this.config.maxLianSe) {
+                    return scramble;
+                }
+
+                if (lianSe < bestLianSe) {
+                    bestLianSe = lianSe;
+                    bestScramble = scramble;
+                }
+            }
+
+            return bestScramble;
+        }
+
+        _generateRaw() {
             const upperAxes = ['R', 'U', 'F'];
             const lowerAxes = ['r', 'u', 'f', 'l', 'd', 'b'];
             const upperDirs = ['', "'", '2'];
@@ -2685,6 +2708,25 @@
             }
 
             return result.join(' ');
+        }
+
+        _countLianSe(scrambleStr) {
+            const cube = new SquareCircle8Cube();
+            const moves = scrambleStr.split(' ').filter(m => m.length > 0);
+            for (const move of moves) {
+                cube.rotate(move);
+            }
+
+            let count = 0;
+            for (const key of cube.faceKeys) {
+                const face = cube.faces[key];
+                for (let i = 0; i < 8; i++) {
+                    if (face[i] === face[(i + 1) % 8]) {
+                        count++;
+                    }
+                }
+            }
+            return count;
         }
 
         shuffleArray(array) {
