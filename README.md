@@ -4,7 +4,7 @@
 
 ![项目状态](https://img.shields.io/badge/状态-活跃-green)
 ![License](https://img.shields.io/badge/License-MIT-blue)
-![版本](https://img.shields.io/badge/版本-v1.0.1-brightgreen)
+![版本](https://img.shields.io/badge/版本-v1.1.0-brightgreen)
 ![浏览器兼容](https://img.shields.io/badge/浏览器-Chrome%20%7C%20Edge%20%7C%20Firefox%20%7C%20Safari-orange)
 
 一个功能强大、界面美观的多魔方类型计时器，支持多种异形魔方计时和统计。
@@ -364,6 +364,17 @@ SOFTWARE.
 ---
 
 ## 📜 更新日志
+
+### v1.1.0 (2026-07-08)
+
+#### 🛠️ 代码质量与工程优化
+
+- 🧹 清除全部 ~50 处 `console.log` 调试日志，新增 `APP_CONFIG.DEBUG` 开关统一控制
+- 🔒 统一存储接口：所有 `localStorage` 操作改用 `StorageHelper` + `APP_CONFIG.STORAGE_KEYS`
+- 🗑️ 清理死代码：空 `if` 块、旧版 `calculateAverage`/`calculateRollingAverage`、重复 `restoreTheme` 定义
+- 🌐 魔方类型下拉菜单改用 `data-i18n` 属性驱动翻译，新增类型不再需要改 JS
+- 🐛 修复 Ao5/Ao12/Ao50/Ao100 的 DNF 计算逻辑：含 1 DNF 时正确去掉最好成绩；DNF 上限与 `removeCount` 对齐（Ao50 允许 5 个、Ao100 允许 10 个）
+- 🏷️ 引入版本号 + pre-commit hook 自动递增，浏览器自动拉取最新资源
 
 ### v1.0.1 (2026-06-29)
 
