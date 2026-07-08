@@ -1,3 +1,9 @@
+    function debug(...args) {
+        if (APP_CONFIG.DEBUG) {
+            console.log('[CubeTimer]', ...args);
+        }
+    }
+
     // ===== DOM元素缓存 =====
     const DOM_CACHE = {
         // 初始化时缓存所有需要的DOM元素
@@ -88,14 +94,8 @@
         // 更新设置按钮
         updateQuickSettingsButtons();
 
-        // 更新魔方类型选择器
+        // 更新魔方类型选择器（option文本由通用data-i18n处理器更新）
         if (cache.cubeTypeSelect) {
-            cache.cubeTypeSelect.options[0].textContent = t('cornerCube');
-            cache.cubeTypeSelect.options[1].textContent = t('twinOctahedron');
-            cache.cubeTypeSelect.options[2].textContent = t('cornerOctahedron');
-            cache.cubeTypeSelect.options[3].textContent = t('twinOctahedron2x2');
-            cache.cubeTypeSelect.options[4].textContent = t('squareCircle4');
-            cache.cubeTypeSelect.options[5].textContent = t('squareCircle8');
             updateCustomCubeSelect();
         }
 
@@ -108,10 +108,6 @@
             cache.nextScrambleBtn.title = t('nextScramble');
             cache.nextScrambleBtn.setAttribute('aria-label', t('nextScramble'));
         }
-
-        // 更新循环次数
-        if (cache.cycleSelect) {
-            }
 
         // 更新复制按钮
         if (cache.copyBtn) {
@@ -4104,8 +4100,6 @@
             this.elements.scramblesList = getEl('scramblesList', true); // 可选元素
 
             // 打乱控制选项元素
-            this.elements.cycleSelect = getEl('cycleSelect', true);
-            this.elements.zeroProbSelect = getEl('zeroProbSelect', true);
             this.elements.cornerOctaScrambleType = getEl('cornerOctaScrambleType', true);
 
             // 主题控制元素
@@ -4153,7 +4147,6 @@
             if (this.elements.timerStartBtn) {
                 this.elements.timerStartBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    console.log('Timer start button clicked');
                     this.toggleTimer();
                 });
             }
@@ -4161,7 +4154,6 @@
             if (this.elements.timerResetBtn) {
                 this.elements.timerResetBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    console.log('Timer reset button clicked');
                     this.resetTimer();
                 });
             }
@@ -4171,14 +4163,12 @@
             if (timerTouchOverlay) {
                 timerTouchOverlay.addEventListener('click', (e) => {
                     e.preventDefault();
-                    console.log('Timer touch overlay clicked');
                     this.toggleTimer();
                 });
 
                 // 添加触摸事件支持
                 timerTouchOverlay.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    console.log('Timer touch overlay touch started');
                     this.toggleTimer();
                 });
             }
@@ -4423,8 +4413,6 @@
             
             // 键盘事件监听 - 使用capture阶段确保事件优先处理
             document.addEventListener('keydown', (e) => {
-                console.log('Keydown event:', e.code, 'Target:', e.target.tagName, 'State:', this.state.timerState);
-                
                 if (e.code === 'Space') {
                     // 阻止事件冒泡和默认行为
                     e.preventDefault();
@@ -4461,9 +4449,6 @@
                         this.spacePressStartTime = Date.now();
                         this.spaceIsLongPress = false;
                         
-                        // 添加日志用于调试
-                        console.log('空格键按下，变红');
-                        
                         // 检查是否按住超过0.5秒
                         this.spacePressTimer = setTimeout(() => {
                             if (this.state.timerState === 'ready') {
@@ -4477,11 +4462,6 @@
                                     displayElement.classList.add('timer-held-long');
                                 }
                                 this.spaceIsLongPress = true;
-                                
-                                // 添加日志用于调试
-                                console.log('空格键长按0.5秒，变绿');
-                            } else {
-                                console.log('空格键长按0.5秒：状态已改变，不再为ready，不执行变绿');
                             }
                         }, 500);
                     }
@@ -4505,8 +4485,6 @@
                                 // 检查当前状态，如果在释放时已经是running状态，说明是长按后开始计时了
                                 // 这种情况下不需要执行释放后的逻辑
                                 if (this.state.timerState === 'running') {
-                                    // 在这种情况下，我们已经在长按0.5秒后开始计时了，释放事件不需要额外操作
-                                    console.log('空格键释放：已在计时状态，无需额外操作');
                                     return;
                                 }
                                 
@@ -4525,12 +4503,10 @@
                                 
                                 // 计算按住时间
                                 const pressDuration = Date.now() - this.spacePressStartTime;
-                                console.log('空格键释放：按住时间', pressDuration, 'ms, spaceIsLongPress:', this.spaceIsLongPress, '状态:', this.state.timerState);
                                 
                                 // 如果按住时间超过0.5秒，则直接开始计时
                                 if (this.spaceIsLongPress && this.state.timerState === 'ready') {
-                                    console.log('空格键释放：执行开始计时');
-                                    this.startTimer(); // 直接开始计时
+                                    this.startTimer();
                                 }
                                 // 如果按住时间不足0.5秒，则不执行任何操作，保持黑色状态
                             }
@@ -4553,7 +4529,6 @@
                         return;
                     }
                     e.preventDefault();
-                    console.log('Fullscreen timer clicked, state:', this.state.timerState);
                     
                     // 在running状态下点击也应能停止计时，所以不限制状态
                     if (this.state.timerState !== 'ready' && this.state.timerState !== 'running') return;
@@ -4646,7 +4621,6 @@
                         return;
                     }
                     e.preventDefault();
-                    console.log('Fullscreen timer touched, state:', this.state.timerState);
                     
                     // 在running状态下触摸也应能停止计时，所以不限制状态
                     if (this.state.timerState !== 'ready' && this.state.timerState !== 'running') return;
@@ -5206,7 +5180,6 @@
             const initAudio = () => {
                 if (!this.audioContext) {
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    console.log('Audio context initialized');
                 }
                 // 移除事件监听器
                 document.removeEventListener('click', initAudio);
@@ -5239,7 +5212,7 @@
                 oscillator.start(this.audioContext.currentTime);
                 oscillator.stop(this.audioContext.currentTime + duration / 1000);
             } catch (error) {
-                console.log('Error playing beep:', error);
+                console.warn('Error playing beep:', error);
             }
         }
         
@@ -5281,7 +5254,7 @@
             }
             
             // 保存声音设置
-            localStorage.setItem('cube-timer-sound-enabled', this.state.soundEnabled.toString());
+            StorageHelper.setItem(APP_CONFIG.STORAGE_KEYS.SOUND_ENABLED, this.state.soundEnabled);
         }
 
         toggleTheme() {
@@ -5306,13 +5279,6 @@
             StorageHelper.setItem(APP_CONFIG.STORAGE_KEYS.THEME, newTheme);
         }
 
-        restoreTheme() {
-            const savedTheme = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.THEME, 'light');
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.body.setAttribute('data-theme', savedTheme);
-            updateLogoForTheme(savedTheme);
-        }
-        
         updateSoundButton() {
             const icon = this.elements.soundBtn.querySelector('i');
             if (this.state.soundEnabled) {
@@ -5327,9 +5293,9 @@
         }
         
         restoreSoundSettings() {
-            const saved = localStorage.getItem('cube-timer-sound-enabled');
+            const saved = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.SOUND_ENABLED);
             if (saved !== null) {
-                this.state.soundEnabled = saved === 'true';
+                this.state.soundEnabled = saved === true || saved === 'true';
             }
             this.updateSoundButton();
         }
@@ -5391,11 +5357,6 @@
  */
         saveTimeRecords() {
             try {
-                console.log('开始保存时间记录...');
-                console.log('times:', this.state.times);
-                console.log('counters:', this.state.counters);
-                console.log('generatedScrambles:', this.state.generatedScrambles);
-
                 const timeRecords = {
                     currentCubeType: this.state.currentCubeType || 'corner',
                     times: this.state.times,
@@ -5403,11 +5364,9 @@
                     generatedScrambles: this.state.generatedScrambles
                 };
                 const data = JSON.stringify(timeRecords);
-                localStorage.setItem('cube-timer-records', data);
-                console.log('保存成功:', data);
+                StorageHelper.setItem(APP_CONFIG.STORAGE_KEYS.RECORDS, data);
             } catch (e) {
                 console.error('保存时间记录失败:', e);
-                // 尝试通知用户（如果有通知功能）
                 if (typeof this.showNotification === 'function') {
                     this.showNotification('保存数据失败，请检查浏览器存储空间');
                 }
@@ -5512,41 +5471,27 @@
  */
         restoreTimeRecords() {
             try {
-                console.log('开始恢复时间记录...');
-                const savedRecords = localStorage.getItem('cube-timer-records');
-                console.log('localStorage中的数据:', savedRecords);
+                const savedRecords = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.RECORDS);
 
                 if (!savedRecords) {
-                    // 没有保存的数据，使用默认值
-                    console.log('没有找到保存的数据，使用默认值');
                     this.initializeDefaultState();
                     return;
                 }
 
-                const timeRecords = JSON.parse(savedRecords);
-                console.log('解析后的数据:', timeRecords);
+                const timeRecords = typeof savedRecords === 'string' ? JSON.parse(savedRecords) : savedRecords;
 
-                // 验证数据结构
                 if (!this.validateTimeRecords(timeRecords)) {
-                    console.warn('时间记录数据格式无效，使用默认值');
                     this.initializeDefaultState();
                     return;
                 }
 
-                console.log('数据验证通过，开始恢复...');
-
-                // 恢复当前魔方类型
                 this.state.currentCubeType = timeRecords.currentCubeType || 'corner';
 
-                // 兼容新旧数据格式
                 if (timeRecords.times && timeRecords.counters && timeRecords.generatedScrambles) {
-                    // 新格式：统一的数据结构
                     this.state.times = timeRecords.times;
                     this.state.counters = timeRecords.counters;
                     this.state.generatedScrambles = timeRecords.generatedScrambles;
-                    console.log('恢复新格式数据完成');
                 } else {
-                    // 旧格式：分散的数据结构，迁移到新结构
                     this.state.times = {
                         corner: timeRecords.cornerTimes || [],
                         octahedron: timeRecords.octahedronTimes || [],
@@ -5571,14 +5516,9 @@
                         squareCircle4: [],
                         squareCircle8: []
                     };
-                    console.log('恢复旧格式数据并迁移完成');
                 }
-
-                console.log('当前魔方类型:', this.state.currentCubeType);
-                console.log('当前成绩记录:', this.state.times[this.state.currentCubeType]);
             } catch (e) {
                 console.error('恢复时间记录失败:', e);
-                // 如果恢复失败，使用默认值
                 this.initializeDefaultState();
             }
         }
@@ -6499,7 +6439,6 @@
         
         // ===== 专业计时器核心功能 =====
         toggleTimer() {
-            console.log('toggleTimer called, current state:', this.state.timerState);
             if (this.state.timerState === 'ready') {
                 this.startTimer();
             } else if (this.state.timerState === 'inspecting') {
@@ -6652,10 +6591,7 @@
         }
         
         stopTimer() {
-            console.log('=== stopTimer 开始 ===');
-            console.log('当前计时状态:', this.state.timerState);
             if (this.state.timerState !== 'running') {
-                console.log('计时器未在运行，退出');
                 return;
             }
 
@@ -6663,7 +6599,6 @@
             const elapsed = this.state.lastUpdateTime ? this.state.lastUpdateTime - this.state.startTime : Date.now() - this.state.startTime;
             let time = elapsed / 1000;
             let penalty = '';
-            console.log('计算时间:', time, '惩罚:', penalty);
 
             // 应用观察时间惩罚
             if (this.state.inspectionPenalty === 'DNF') {
@@ -6673,7 +6608,6 @@
                 time += 2; // 加2秒惩罚
                 penalty = '+2'; // 用于显示格式
             }
-            console.log('应用惩罚后 - time:', time, 'penalty:', penalty);
 
             cancelAnimationFrame(this.state.animationFrame);
 
@@ -6724,13 +6658,10 @@
             this.spaceKeyPressed = false;
 
             // 保存时间
-            console.log('即将调用 saveTime');
             this.saveTime(time, penalty);
-            console.log('saveTime 调用完成');
 
             // 准备下一个打乱（这里会更新计数器并生成新打乱）
             this.prepareNextScramble();
-            console.log('=== stopTimer 结束 ===');
         }
         
         exitFullscreen() {
@@ -6863,10 +6794,7 @@
         
         // ===== 时间记录存储管理 =====
         saveTime(time, penalty = '') {
-            console.log('=== saveTime 开始 ===');
-            console.log('传入参数 - time:', time, 'penalty:', penalty);
             const currentNumber = this.getCurrentCounter();
-            console.log('当前序号:', currentNumber);
 
             const timeRecord = {
                 number: currentNumber,
@@ -6876,13 +6804,10 @@
                 cubeType: this.state.currentCubeType,
                 timestamp: Date.now()
             };
-            console.log('创建的记录:', timeRecord);
 
             // 使用通用方法获取当前时间记录数组
             const currentTimes = this.getCurrentTimes();
-            console.log('当前记录数组长度:', currentTimes.length);
             currentTimes.unshift(timeRecord);
-            console.log('添加后记录数组长度:', currentTimes.length);
 
             // 限制记录数量
             if (currentTimes.length > HISTORY_LIMITS.TIME_RECORDS) {
@@ -6902,7 +6827,6 @@
             tempDiv.innerHTML = timeDisplay;
             const plainText = tempDiv.textContent || tempDiv.innerText || 'DNF';
             this.showNotification(`记录时间: ${plainText}`);
-            console.log('=== saveTime 结束 ===');
         }
         
         getScrambleText() {
@@ -7289,30 +7213,28 @@
             return bestAverage === Infinity ? null : bestAverage;
         }
         
-        /**
- * 兼容旧代码的滚动平均计算方法
- * @param {Array} times - 时间记录数组
- * @param {number} windowSize - 窗口大小
- * @returns {number|null} 平均值
- */
-        calculateRollingAverage(times, windowSize) {
-            return this.calculateAO(times, windowSize);
-        }
+        findBestRollingAverage(records, windowSize) {
+            if (records.length < windowSize) return null;
 
-        /**
- * 计算简单平均值（旧版兼容）
- * @param {Array} times - 时间记录数组
- * @returns {number} 平均值
- */
-        calculateAverage(times) {
-            if (times.length < 3) return 0;
+            let bestAverage = Infinity;
+            let bestStartIndex = -1;
 
-            const sorted = [...times].sort((a, b) => a - b);
-            sorted.pop(); // 移除最大值
-            sorted.shift(); // 移除最小值
+            for (let i = 0; i <= records.length - windowSize; i++) {
+                const windowRecords = records.slice(i, i + windowSize);
+                const average = this.calculateAO(windowRecords, windowSize);
+                if (average !== null && average < bestAverage) {
+                    bestAverage = average;
+                    bestStartIndex = i;
+                }
+            }
 
-            const sum = sorted.reduce((a, b) => a + b, 0);
-            return sum / sorted.length;
+            return bestAverage === Infinity ? null : {
+                average: bestAverage,
+                records: records.slice(bestStartIndex, bestStartIndex + windowSize),
+                numbers: records
+                    .slice(bestStartIndex, bestStartIndex + windowSize)
+                    .map(t => t.number)
+            };
         }
 
         // ===== 统计数据分析与显示 =====
@@ -7650,36 +7572,6 @@
             this.exportBestAo(12);
         }
         
-        findBestRollingAverage(records, windowSize) {
-            if (records.length < windowSize) return null;
-            
-            let bestAverage = Infinity;
-            let bestStartIndex = -1;
-            
-            // 计算所有可能的滚动窗口
-            for (let i = 0; i <= records.length - windowSize; i++) {
-                const windowRecords = records.slice(i, i + windowSize);
-                // 检查窗口中是否有DNF成绩
-                const hasDNF = windowRecords.some(record => record.time === null);
-                if (hasDNF) continue; // 跳过包含DNF的窗口
-                
-                const windowTimes = windowRecords.map(record => record.time);
-                const average = this.calculateAverage(windowTimes);
-                if (average < bestAverage) {
-                    bestAverage = average;
-                    bestStartIndex = i;
-                }
-            }
-            
-            return bestAverage === Infinity ? null : {
-                average: bestAverage,
-                records: records.slice(bestStartIndex, bestStartIndex + windowSize),
-                numbers: records
-                    .slice(bestStartIndex, bestStartIndex + windowSize)
-                    .map(t => t.number)
-            };
-        }
-        
         generateMultipleScrambles() {
             if (!this.elements.generateCount || !this.elements.startNumber) {
                 console.error('generateCount or startNumber element not found');
@@ -7893,28 +7785,15 @@
     // 初始化应用
     let app;
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM loaded, initializing app...');
-        
         // 延迟初始化，确保DOM完全渲染
         setTimeout(() => {
             app = new CubeTimerApp();
-            window.app = app; // 将app对象挂载到window，以便其他函数访问
-            console.log('App initialized:', app);
-            
+            window.app = app;
+
             // 初始化语言设置
             initLanguage();
-            
+
             // 在app初始化后更新所有文本（包括历史摘要）
             updateAllText();
-            
-            // 添加全局调试函数
-            window.debugTimer = () => {
-                console.log('Timer state:', app.state.timerState);
-                console.log('Timer elements:', {
-                    display: app.elements.timerDisplay,
-                    startBtn: app.elements.timerStartBtn,
-                    resetBtn: app.elements.timerResetBtn
-                });
-            };
         }, 100);
     });

@@ -108,6 +108,7 @@ const AUDIO_CONFIG = {
 
 // ===== 应用配置常量 =====
 const APP_CONFIG = {
+    DEBUG: false,
     INSPECTION_TIME: 15,
     INSPECTION_TIMEOUT_DNF: 17,
     INSPECTION_TIMEOUT_PLUS2: 15,
@@ -122,6 +123,7 @@ const APP_CONFIG = {
     STORAGE_KEYS: {
         THEME: 'cubeTimerTheme',
         LANGUAGE: 'cubeTimerLanguage',
-        TIMES: 'cubeTimerTimes'
+        RECORDS: 'cube-timer-records',
+        SOUND_ENABLED: 'cube-timer-sound-enabled'
     }
 };
