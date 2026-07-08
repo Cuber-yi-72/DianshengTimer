@@ -7160,36 +7160,28 @@
 
         // ===== AO平均值算法实现 =====
         calculateAO(times, windowSize) {
-            // AO计算规则
             const aoRules = {
-                5: { removeCount: 1, validCount: 3 },
-                12: { removeCount: 2, validCount: 8 },
-                50: { removeCount: 5, validCount: 40 },
-                100: { removeCount: 10, validCount: 80 }
+                5: { removeCount: 1 },
+                12: { removeCount: 2 },
+                50: { removeCount: 5 },
+                100: { removeCount: 10 }
             };
-            
+
             const rule = aoRules[windowSize];
             if (!rule || times.length < windowSize) return null;
-            
+
             const windowRecords = times.slice(0, windowSize);
             const validTimes = windowRecords.filter(record => record.time !== null);
             const dnfCount = windowRecords.length - validTimes.length;
-            
-            // DNF处理：1次DNF作为最差成绩舍去，2次及以上DNF则整个AO为DNF
-            if (dnfCount >= 2) return null; // 结果为DNF
-            if (dnfCount === 1) {
-                // 1次DNF，移除DNF和1个最差有效成绩
-                const sortedValid = validTimes.map(record => record.time).sort((a, b) => a - b);
-                sortedValid.pop(); // 移除最差有效成绩
-                const sum = sortedValid.reduce((a, b) => a + b, 0);
-                return sum / sortedValid.length;
-            }
-            
-            // 无DNF，按照规则移除最大值和最小值
-            const sortedTimes = validTimes.map(record => record.time).sort((a, b) => a - b);
             const removeCount = rule.removeCount;
-            const effectiveTimes = sortedTimes.slice(removeCount, sortedTimes.length - removeCount);
-            
+
+            if (dnfCount > removeCount) return null;
+
+            const sortedValid = validTimes.map(record => record.time).sort((a, b) => a - b);
+            const effectiveTimes = sortedValid.slice(removeCount, sortedValid.length - (removeCount - dnfCount));
+
+            if (effectiveTimes.length === 0) return null;
+
             const sum = effectiveTimes.reduce((a, b) => a + b, 0);
             return sum / effectiveTimes.length;
         }
