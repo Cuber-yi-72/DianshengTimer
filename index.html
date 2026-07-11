@@ -41,7 +41,7 @@
     <link rel="icon" type="image/png" href="./pictures/favicon.png">
     <link rel="stylesheet" href="./pictures/font-awesome/css/all.min.css">
 
-    <link rel="stylesheet" href="./css/styles.css?v=1.1.1">
+    <link rel="stylesheet" href="./css/styles.css?v=1.2.0">
 </head>
 <body data-theme="light">
     <!-- 全屏计时器 -->
@@ -385,11 +385,11 @@
     </div>
 
 
-    <script src="./js/constants.js?v=1.1.1"></script>
-    <script src="./js/storage.js?v=1.1.1"></script>
-    <script src="./js/i18n.js?v=1.1.1"></script>
-    <script src="./js/main.js?v=1.1.1"></script>
-    <script src="./js/ui-helper.js?v=1.1.1"></script>
+    <script src="./js/constants.js?v=1.2.0"></script>
+    <script src="./js/storage.js?v=1.2.0"></script>
+    <script src="./js/i18n.js?v=1.2.0"></script>
+    <script src="./js/main.js?v=1.2.0"></script>
+    <script src="./js/ui-helper.js?v=1.2.0"></script>
 
 
 <!-- 坐标弹出层 -->
@@ -402,8 +402,19 @@
         </div>
         <div class="coordinate-body">
             <div class="coordinate-view-container">
-                <div id="coordinateSvgContainer" class="coordinate-svg-container">
-                    <!-- SVG视图将在此处动态渲染 -->
+                <div class="coordinate-preview-grid">
+                    <div class="coordinate-preview-card">
+                        <div class="coordinate-panel-title" data-i18n="twoDView">二维模型</div>
+                        <div id="coordinateSvgContainer" class="coordinate-svg-container">
+                            <!-- 2D视图将在此处动态渲染 -->
+                        </div>
+                    </div>
+                    <div class="coordinate-preview-card">
+                        <div class="coordinate-panel-title" data-i18n="threeDView">三维模型</div>
+                        <div id="coordinate3dContainer" class="coordinate-3d-container">
+                            <canvas id="coordinate3dCanvas" class="coordinate-3d-canvas"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="coordinate-buttons-container">
@@ -415,5 +426,6 @@
         </div>
     </div>
 </div>
-</body>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a18fe7e27b763eb0',t:'MTc4MzY5MDA0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

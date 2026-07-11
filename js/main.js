@@ -1,6 +1,10 @@
+    // 暴露由 version.json 自动同步到 APP_CONFIG 的当前版本，便于运行时检查。
+    window.CUBE_TIMER_VERSION = APP_CONFIG.APP_VERSION;
+    document.documentElement.dataset.appVersion = APP_CONFIG.APP_VERSION;
+
     function debug(...args) {
         if (APP_CONFIG.DEBUG) {
-            console.log('[CubeTimer]', ...args);
+            console.log(`[CubeTimer v${APP_CONFIG.APP_VERSION}]`, ...args);
         }
     }
 
@@ -478,6 +482,7 @@
     }
 
     // ===== 转角三阶魔方核心数据结构 =====
+    // 转角三阶、转角八面体是最早写的一部分代码，而且是当时不是奔着平面模型写的，所以有些看起来会很奇怪，但是能跑，暂时就不进一步优化了
     class CornerCube3x3 extends BaseCubeModel {
         constructor() {
             super();
@@ -532,8 +537,7 @@
                 'DBL': () => this.rotateDBL(),
                 'DBL\'': () => this.rotateDBLCounterClockwise(),
                 'DBR': () => this.rotateDBR(),
-                'DBR\'': () => this.rotateDBRCounterClockwise(),
-                'x2': () => this.performX2Rotation()
+                'DBR\'': () => this.rotateDBRCounterClockwise()
             };
 
             const move = moveMap[rotation];
@@ -543,327 +547,69 @@
             }
         }
         
-// x2翻面操作
-        /**
-         * 执行X2旋转（魔方绕X轴旋转180度）
-         * 该操作将魔方整体翻转，相当于"上下颠倒"
-         *
-         * 面布局说明（标准三阶魔方）:
-         * - Top (Y): 顶面 - 白色
-         * - Bottom (W): 底面 - 黄色
-         * - Front (G): 前面 - 绿色
-         * - Back (B): 后面 - 蓝色
-         * - Left (O): 左面 - 橙色
-         * - Right (R): 右面 - 红色
-         *
-         * X2旋转效果:
-         * 1. 左右面（橙红）内部特定位置交换（保持相对关系）
-         * 2. 顶底面（白黄）完全交换
-         * 3. 前后面（绿蓝）特定对应位置交叉交换
-         */
-        performX2Rotation() {
-            // 步骤1: 红橙面内部进行特定交换
-            // 这是因为转角魔方的特殊结构，左右面在X2旋转时需要内部调整
-            this.swapRedOrangeFaceRegions(this.faces.left);  // 橙色面（左）
-            this.swapRedOrangeFaceRegions(this.faces.right); // 红色面（右）
-
-            // 步骤2: 黄白面完全交换
-            // X2旋转后，顶面变成底面，底面变成顶面
-            const tempTop = [...this.faces.top];
-            this.faces.top = [...this.faces.bottom];
-            this.faces.bottom = tempTop;
-
-            // 步骤3: 蓝绿面特定对应位置交叉交换
-            // 前后面在X2旋转时不仅交换位置，还需要特定的内部调整
-            this.swapBlueGreenFaces();
-        }
-
-        /**
-         * 红橙面内部特定位置交换
-         *
-         * 面结构说明（转角三阶）:
-         * 每个面有17个位置，编号1-17，布局如下：
-         *
-         *     1   2   3
-         *    4   5   6
-         *   7   8   9   10
-         *    11  12  13
-         *   14  15  16  17
-         *
-         * 交换规则（对称交换）:
-         * - 对角线交换: 1↔5, 2↔4, 6↔13, 7↔12, 8↔14, 9↔16, 10↔15, 11↔17
-         * - 中心点保持: 3↔3（实际上不变）
-         *
-         * 这个交换模式是为了保持转角魔方的几何特性
-         *
-         * @param {Array} face - 面的颜色数组（17个元素）
-         */
-        swapRedOrangeFaceRegions(face) {
-            // 第一行: 对角线交换 (1↔5, 2↔4)
-            const temp1 = face[0];   // 保存位置1
-            const temp2 = face[4];   // 保存位置5
-            face[0] = temp2;         // 位置5 -> 位置1
-            face[4] = temp1;         // 位置1 -> 位置5
-
-            const temp3 = face[1];   // 保存位置2
-            const temp4 = face[3];   // 保存位置4
-            face[1] = temp4;         // 位置4 -> 位置2
-            face[3] = temp3;         // 位置2 -> 位置4
-
-            // 中心位置: 3↔3（实际上保持不变，保持代码一致性）
-            const temp5 = face[2];   // 保存位置3
-            face[2] = temp5;         // 位置3 -> 位置3（实际上是交换）
-
-            // 第二行和第三行: 对角线交换 (6↔13, 7↔12, 8↔14)
-            const temp6 = face[5];   // 保存位置6
-            const temp7 = face[12];  // 保存位置13
-            face[5] = temp7;         // 位置13 -> 位置6
-            face[12] = temp6;        // 位置6 -> 位置13
-
-            const temp8 = face[6];   // 保存位置7
-            const temp9 = face[11];  // 保存位置12
-            face[6] = temp9;         // 位置12 -> 位置7
-            face[11] = temp8;        // 位置7 -> 位置12
-
-            const temp10 = face[7];  // 保存位置8
-            const temp11 = face[13]; // 保存位置14
-            face[7] = temp11;        // 位置14 -> 位置8
-            face[13] = temp10;       // 位置8 -> 位置14
-
-            // 第四行和第五行: 对角线交换 (9↔16, 10↔15, 11↔17)
-            const temp12 = face[8];  // 保存位置9
-            const temp13 = face[15]; // 保存位置16
-            face[8] = temp13;        // 位置16 -> 位置9
-            face[15] = temp12;       // 位置9 -> 位置16
-
-            const temp14 = face[9];  // 保存位置10
-            const temp15 = face[14]; // 保存位置15
-            face[9] = temp15;        // 位置15 -> 位置10
-            face[14] = temp14;       // 位置10 -> 位置15
-
-            const temp16 = face[10]; // 保存位置11
-            const temp17 = face[16]; // 保存位置17
-            face[10] = temp17;       // 位置17 -> 位置11
-            face[16] = temp16;       // 位置11 -> 位置17
-        }
-
-        /**
-         * 蓝绿面（前后面）特定对应位置交叉交换
-         *
-         * X2旋转时，前面（绿）和后面（蓝）需要交叉交换
-         * 这意味着前面的某个位置要和后面的对称位置交换
-         *
-         * 面布局说明（标准三阶魔方）:
-         * 每个面有17个位置，编号1-17，布局同上
-         *
-         * 交换规则（交叉交换）:
-         * - 1↔5: 蓝1↔绿5, 蓝5↔绿1（交叉对角线）
-         * - 2↔4: 蓝2↔绿4, 蓝4↔绿2（交叉对角线）
-         * - 3↔3: 蓝3↔绿3（中心对称）
-         * - 6↔13, 7↔12, 8↔14: 交叉交换（注意编号关系）
-         * - 9↔16, 10↔15, 11↔17: 交叉交换
-         *
-         * 这个交换模式实现了前面和后面的180度旋转交换
-         */
-        swapBlueGreenFaces() {
-            // 第一行: 交叉对角线交换
-            // 蓝1↔绿5, 蓝5↔绿1
-            const temp1 = this.faces.front[0];  // 保存蓝1
-            const temp2 = this.faces.front[4];  // 保存蓝5
-            this.faces.front[0] = this.faces.back[4];  // 绿5 -> 蓝1
-            this.faces.front[4] = this.faces.back[0];  // 绿1 -> 蓝5
-            this.faces.back[4] = temp1;  // 蓝1 -> 绿5
-            this.faces.back[0] = temp2;  // 蓝5 -> 绿1
-
-            // 蓝2↔绿4, 蓝4↔绿2
-            const temp3 = this.faces.front[1];  // 保存蓝2
-            const temp4 = this.faces.front[3];  // 保存蓝4
-            this.faces.front[1] = this.faces.back[3];  // 绿4 -> 蓝2
-            this.faces.front[3] = this.faces.back[1];  // 绿2 -> 蓝4
-            this.faces.back[3] = temp3;  // 蓝2 -> 绿4
-            this.faces.back[1] = temp4;  // 蓝4 -> 绿2
-
-            // 中心点: 蓝3↔绿3（相互交换）
-            const temp17 = this.faces.front[2];  // 保存蓝3
-            this.faces.front[2] = this.faces.back[2];  // 绿3 -> 蓝3
-            this.faces.back[2] = temp17;  // 蓝3 -> 绿3
-
-            // 第二行和第三行: 交叉交换
-            // 蓝6↔绿13, 蓝13↔绿6
-            const temp5 = this.faces.front[5];  // 保存蓝6
-            const temp6 = this.faces.front[12]; // 保存蓝13
-            this.faces.front[5] = this.faces.back[12]; // 绿13 -> 蓝6
-            this.faces.front[12] = this.faces.back[5];  // 绿6 -> 蓝13
-            this.faces.back[12] = temp5;  // 蓝6 -> 绿13
-            this.faces.back[5] = temp6;   // 蓝13 -> 绿6
-            
-            // 7-12交换：蓝7和绿12交换，蓝12和绿7交换
-            const temp7 = this.faces.front[6];  // 保存蓝7
-            const temp8 = this.faces.front[11]; // 保存蓝12
-            this.faces.front[6] = this.faces.back[11]; // 绿12 -> 蓝7
-            this.faces.front[11] = this.faces.back[6];  // 绿7 -> 蓝12
-            this.faces.back[11] = temp7;  // 蓝7 -> 绿12
-            this.faces.back[6] = temp8;   // 蓝12 -> 绿7
-            
-            // 8-14交换：蓝8和绿14交换，蓝14和绿8交换
-            const temp9 = this.faces.front[7];  // 保存蓝8
-            const temp10 = this.faces.front[13]; // 保存蓝14
-            this.faces.front[7] = this.faces.back[13]; // 绿14 -> 蓝8
-            this.faces.front[13] = this.faces.back[7];  // 绿8 -> 蓝14
-            this.faces.back[13] = temp9;  // 蓝8 -> 绿14
-            this.faces.back[7] = temp10;  // 蓝14 -> 绿8
-            
-            // 9-16交换：蓝9和绿16交换，蓝16和绿9交换
-            const temp11 = this.faces.front[8];  // 保存蓝9
-            const temp12 = this.faces.front[15]; // 保存蓝16
-            this.faces.front[8] = this.faces.back[15]; // 绿16 -> 蓝9
-            this.faces.front[15] = this.faces.back[8];  // 绿9 -> 蓝16
-            this.faces.back[15] = temp11; // 蓝9 -> 绿16
-            this.faces.back[8] = temp12;  // 蓝16 -> 绿9
-            
-            // 10-15交换：蓝10和绿15交换，蓝15和绿10交换
-            const temp13 = this.faces.front[9];  // 保存蓝10
-            const temp14 = this.faces.front[14]; // 保存蓝15
-            this.faces.front[9] = this.faces.back[14]; // 绿15 -> 蓝10
-            this.faces.front[14] = this.faces.back[9];  // 绿10 -> 蓝15
-            this.faces.back[14] = temp13; // 蓝10 -> 绿15
-            this.faces.back[9] = temp14;  // 蓝15 -> 绿10
-            
-            // 11-17交换：蓝11和绿17交换，蓝17和绿11交换
-            const temp15 = this.faces.front[10]; // 保存蓝11
-            const temp16 = this.faces.front[16]; // 保存蓝17
-            this.faces.front[10] = this.faces.back[16]; // 绿17 -> 蓝11
-            this.faces.front[16] = this.faces.back[10]; // 绿11 -> 蓝17
-            this.faces.back[16] = temp15; // 蓝11 -> 绿17
-            this.faces.back[10] = temp16; // 蓝17 -> 绿11
-        }
-        
-        // 交换两个面的特定区域
-        swapFaceRegions(face1, face2) {
-            // 1，4互换
-            const temp1 = face1[0];
-            face1[0] = face2[3];
-            face2[3] = temp1;
-            
-            // 6，7互换
-            const temp2 = face1[5];
-            face1[5] = face2[6];
-            face2[6] = temp2;
-            
-            // 9，15互换
-            const temp3 = face1[8];
-            face1[8] = face2[14];
-            face2[14] = temp3;
-            
-            // 11，17互换
-            const temp4 = face1[10];
-            face1[10] = face2[16];
-            face2[16] = temp4;
-            
-            // 10，16互换
-            const temp5 = face1[9];
-            face1[9] = face2[15];
-            face2[15] = temp5;
-            
-            // 2，5互换
-            const temp6 = face1[1];
-            face1[1] = face2[4];
-            face2[4] = temp6;
-            
-            // 12，13互换
-            const temp7 = face1[11];
-            face1[11] = face2[12];
-            face2[12] = temp7;
-        }
-        
-        rotateFace180(face) {
-            // 将面旋转180度
-            const temp = [...face];
-            face[0] = temp[16];
-            face[1] = temp[15];
-            face[2] = temp[14];
-            face[3] = temp[13];
-            face[4] = temp[12];
-            face[5] = temp[11];
-            face[6] = temp[10];
-            face[7] = temp[9];
-            face[8] = temp[8];
-            face[9] = temp[7];
-            face[10] = temp[6];
-            face[11] = temp[5];
-            face[12] = temp[4];
-            face[13] = temp[3];
-            face[14] = temp[2];
-            face[15] = temp[1];
-            face[16] = temp[0];
-        }
-        
-        // 动画旋转效果 - 已移除以避免角度变化
+        // 动画旋转效果 - 本来想做动画来着，后来放弃了
         animateRotation(rotation) {
-            // 空实现，避免魔方角度发生变化
         }
         
-        // 前面顺时针旋转90度 - 按照新的转角魔方规则（修正方向）
+        // 前面顺时针旋转90度
         rotateFrontClockwise() {
-            // 保存需要移动的色块
-            const temp = this.faces.left[1]; // O2 (橙色面第2个区域)
-            
-            // O2-Y5-R4-W1-O2 循环（反转方向）
+            // O2-Y5-R4-W1-O2 循环
+            const temp = this.faces.left[1]; // O2
             this.faces.left[1] = this.faces.bottom[0]; // W1 -> O2位置
             this.faces.bottom[0] = this.faces.right[3]; // R4 -> W1位置
             this.faces.right[3] = this.faces.top[4]; // Y5 -> R4位置  
             this.faces.top[4] = temp; // O2 -> Y5位置
             
-            // O13-Y16-R6-W9-O13 循环（反转方向）
+            // O13-Y16-R6-W9-O13 循环
             const temp2 = this.faces.left[12]; // O13
             this.faces.left[12] = this.faces.bottom[8]; // W9 -> O13位置
             this.faces.bottom[8] = this.faces.right[5]; // R6 -> W9位置
             this.faces.right[5] = this.faces.top[15]; // Y16 -> R6位置
             this.faces.top[15] = temp2; // O13 -> Y16位置
             
-            // O14-Y17-R8-W11-O14 循环（反转方向）
+            // O14-Y17-R8-W11-O14 循环
             const temp3 = this.faces.left[13]; // O14
             this.faces.left[13] = this.faces.bottom[10]; // W11 -> O14位置
             this.faces.bottom[10] = this.faces.right[7]; // R8 -> W11位置
             this.faces.right[7] = this.faces.top[16]; // Y17 -> R8位置
             this.faces.top[16] = temp3; // O14 -> Y17位置
             
-            // O12-Y15-R7-W10-O12 循环（反转方向）
+            // O12-Y15-R7-W10-O12 循环
             const temp4 = this.faces.left[11]; // O12
             this.faces.left[11] = this.faces.bottom[9]; // W10 -> O12位置
             this.faces.bottom[9] = this.faces.right[6]; // R7 -> W10位置
             this.faces.right[6] = this.faces.top[14]; // Y15 -> R7位置
             this.faces.top[14] = temp4; // O12 -> Y15位置
             
-            // O5-Y4-R1-W2-O5 循环（反转方向）
-            const temp5 = this.faces.left[4]; // O5 (左面第4个区域)
+            // O5-Y4-R1-W2-O5 循环
+            const temp5 = this.faces.left[4]; // O5
             this.faces.left[4] = this.faces.bottom[1]; // W2 -> O5位置
             this.faces.bottom[1] = this.faces.right[0]; // R1 -> W2位置
             this.faces.right[0] = this.faces.top[3]; // Y4 -> R1位置
             this.faces.top[3] = temp5; // O5 -> Y4位置
             
-            // 前面面内转动：B9-B13-B16-B6-B9 循环
+            // B9-B13-B16-B6-B9 循环
             const temp6 = this.faces.front[8]; // B9
             this.faces.front[8] = this.faces.front[5]; // B6 -> B9位置
             this.faces.front[5] = this.faces.front[15]; // B16 -> B6位置
             this.faces.front[15] = this.faces.front[12]; // B13 -> B16位置
             this.faces.front[12] = temp6; // B9 -> B13位置
             
-            // 前面面内转动：B11-B14-B17-B8-B11 循环
+            // B11-B14-B17-B8-B11 循环
             const temp7 = this.faces.front[10]; // B11
             this.faces.front[10] = this.faces.front[7]; // B8 -> B11位置
             this.faces.front[7] = this.faces.front[16]; // B17 -> B8位置
             this.faces.front[16] = this.faces.front[13]; // B14 -> B17位置
             this.faces.front[13] = temp7; // B11 -> B14位置
             
-            // 前面面内转动：B10-B12-B15-B7-B10 循环
+            // B10-B12-B15-B7-B10 循环
             const temp8 = this.faces.front[9]; // B10
             this.faces.front[9] = this.faces.front[6]; // B7 -> B10位置
             this.faces.front[6] = this.faces.front[14]; // B15 -> B7位置
             this.faces.front[14] = this.faces.front[11]; // B12 -> B15位置
             this.faces.front[11] = temp8; // B10 -> B12位置
             
-            // 前面面内转动：B1-B2-B5-B4-B1 循环
+            // B1-B2-B5-B4-B1 循环
             const temp9 = this.faces.front[0]; // B1
             this.faces.front[0] = this.faces.front[3]; // B4 -> B1位置
             this.faces.front[3] = this.faces.front[4]; // B5 -> B4位置
@@ -873,27 +619,26 @@
         
         // 前面逆时针旋转90度
         rotateFrontCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateFrontClockwise();
             this.rotateFrontClockwise();
             this.rotateFrontClockwise();
         }
         
-        // UFL转动逻辑 - 按照新的转角魔方规则（顺时针方向）
+        // UFL顺时针旋转90度
         rotateUFL() {
-            // O10-Y15-B7-O10 循环（顺时针方向）
+            // O10-Y15-B7-O10 循环
             const temp = this.faces.left[9]; // O10
             this.faces.left[9] = this.faces.front[6]; // B7 -> O10位置
             this.faces.front[6] = this.faces.top[14]; // Y15 -> B7位置
             this.faces.top[14] = temp; // O10 -> Y15位置
             
-            // O2-Y4-B1-O2 循环（顺时针方向）
+            // O2-Y4-B1-O2 循环
             const temp2 = this.faces.left[1]; // O2
             this.faces.left[1] = this.faces.front[0]; // B1 -> O2位置
             this.faces.front[0] = this.faces.top[3]; // Y4 -> B1位置
             this.faces.top[3] = temp2; // O2 -> Y4位置
             
-            // O13-Y6-B9-O13 循环（顺时针方向）
+            // O13-Y6-B9-O13 循环
             const temp3 = this.faces.left[12]; // O13
             this.faces.left[12] = this.faces.front[8]; // B9 -> O13位置
             this.faces.front[8] = this.faces.top[5]; // Y6 -> B9位置
@@ -902,26 +647,25 @@
         
         // UFL逆时针旋转90度
         rotateUFLCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateUFL();
             this.rotateUFL();
         }
         
-        // UFR转动逻辑 - 按照新的转角魔方规则（顺时针方向）
+        // UFR顺时针转90度
         rotateUFR() {
-            // B10-Y12-R7-B10 循环（顺时针方向）
-            const temp = this.faces.front[9]; // B10 (蓝色面第10个区域)
+            // B10-Y12-R7-B10 循环
+            const temp = this.faces.front[9]; // B10
             this.faces.front[9] = this.faces.right[6]; // R7 -> B10位置
             this.faces.right[6] = this.faces.top[11]; // Y12 -> R7位置
             this.faces.top[11] = temp; // B10 -> Y12位置
             
-            // B2-Y5-R1-B2 循环（顺时针方向）
+            // B2-Y5-R1-B2 循环
             const temp2 = this.faces.front[1]; // B2
             this.faces.front[1] = this.faces.right[0]; // R1 -> B2位置
             this.faces.right[0] = this.faces.top[4]; // Y5 -> R1位置
             this.faces.top[4] = temp2; // B2 -> Y5位置
             
-            // B13-Y16-R9-B13 循环（顺时针方向）
+            // B13-Y16-R9-B13 循环
             const temp3 = this.faces.front[12]; // B13
             this.faces.front[12] = this.faces.right[8]; // R9 -> B13位置
             this.faces.right[8] = this.faces.top[15]; // Y16 -> R9位置
@@ -930,26 +674,25 @@
         
         // UFR逆时针旋转90度
         rotateUFRCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateUFR();
             this.rotateUFR();
         }
         
-        // UBL转动逻辑 - 按照新的转角魔方规则（反转方向）
+        // UBL顺时针转90度
         rotateUBL() {
-            // G10-Y7-O7-G10 循环（反转方向）
+            // G10-Y7-O7-G10 循环
             const temp = this.faces.back[9]; // G10
             this.faces.back[9] = this.faces.left[6]; // O7 -> G10位置
             this.faces.left[6] = this.faces.top[6]; // Y7 -> O7位置
             this.faces.top[6] = temp; // G10 -> Y7位置
             
-            // G2-Y1-O1-G2 循环（反转方向）
+            // G2-Y1-O1-G2 循环
             const temp2 = this.faces.back[1]; // G2
             this.faces.back[1] = this.faces.left[0]; // O1 -> G2位置
             this.faces.left[0] = this.faces.top[0]; // Y1 -> O1位置
             this.faces.top[0] = temp2; // G2 -> Y1位置
             
-            // G13-Y9-O9-G13 循环（反转方向）
+            // G13-Y9-O9-G13 循环
             const temp3 = this.faces.back[12]; // G13
             this.faces.back[12] = this.faces.left[8]; // O9 -> G13位置
             this.faces.left[8] = this.faces.top[8]; // Y9 -> O9位置
@@ -958,26 +701,25 @@
         
         // UBL逆时针旋转90度
         rotateUBLCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateUBL();
             this.rotateUBL();
         }
         
-        // UBR转动逻辑 - 按照新的转角魔方规则（反转方向）
+        // UBR顺时针转90度
         rotateUBR() {
-            // R10-Y10-G7-R10 循环（反转方向）
+            // R10-Y10-G7-R10 循环
             const temp = this.faces.right[9]; // R10
             this.faces.right[9] = this.faces.back[6]; // G7 -> R10位置
             this.faces.back[6] = this.faces.top[9]; // Y10 -> G7位置
             this.faces.top[9] = temp; // R10 -> Y10位置
             
-            // R2-Y2-G1-R2 循环（反转方向）
+            // R2-Y2-G1-R2 循环
             const temp2 = this.faces.right[1]; // R2
             this.faces.right[1] = this.faces.back[0]; // G1 -> R2位置
             this.faces.back[0] = this.faces.top[1]; // Y2 -> G1位置
             this.faces.top[1] = temp2; // R2 -> Y2位置
             
-            // R13-Y13-G9-R13 循环（反转方向）
+            // R13-Y13-G9-R13 循环
             const temp3 = this.faces.right[12]; // R13
             this.faces.right[12] = this.faces.back[8]; // G9 -> R13位置
             this.faces.back[8] = this.faces.top[12]; // Y13 -> G9位置
@@ -986,26 +728,25 @@
         
         // UBR逆时针旋转90度
         rotateUBRCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateUBR();
             this.rotateUBR();
         }
         
-        // DFL转动逻辑 - 按照新的转角魔方规则（顺时针方向）
+        // DFL顺时针转90度
         rotateDFL() {
-            // O16-B6-W9-O16 循环（顺时针方向）
+            // O16-B6-W9-O16 循环
             const temp = this.faces.left[15]; // O16
             this.faces.left[15] = this.faces.bottom[8]; // W9 -> O16位置
             this.faces.bottom[8] = this.faces.front[5]; // B6 -> W9位置
             this.faces.front[5] = temp; // O16 -> B6位置
             
-            // O5-B4-W1-O5 循环（顺时针方向）
+            // O5-B4-W1-O5 循环
             const temp2 = this.faces.left[4]; // O5
             this.faces.left[4] = this.faces.bottom[0]; // W1 -> O5位置
             this.faces.bottom[0] = this.faces.front[3]; // B4 -> W1位置
             this.faces.front[3] = temp2; // O5 -> B4位置
             
-            // O12-B15-W7-O12 循环（顺时针方向）
+            // O12-B15-W7-O12 循环
             const temp3 = this.faces.left[11]; // O12
             this.faces.left[11] = this.faces.bottom[6]; // W7 -> O12位置
             this.faces.bottom[6] = this.faces.front[14]; // B15 -> W7位置
@@ -1014,26 +755,25 @@
         
         // DFL逆时针旋转90度
         rotateDFLCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateDFL();
             this.rotateDFL();
         }
         
-        // DFR转动逻辑 - 按照新的转角魔方规则（反转方向）
+        // DFR顺时针转90度
         rotateDFR() {
-            // B16-R6-W13-B16 循环（反转方向）
+            // B16-R6-W13-B16 循环
             const temp = this.faces.front[15]; // B16
             this.faces.front[15] = this.faces.bottom[12]; // W13 -> B16位置
             this.faces.bottom[12] = this.faces.right[5]; // R6 -> W13位置
             this.faces.right[5] = temp; // B16 -> R6位置
             
-            // B5-R4-W2-B5 循环（反转方向）
+            // B5-R4-W2-B5 循环
             const temp2 = this.faces.front[4]; // B5
             this.faces.front[4] = this.faces.bottom[1]; // W2 -> B5位置
             this.faces.bottom[1] = this.faces.right[3]; // R4 -> W2位置
             this.faces.right[3] = temp2; // B5 -> R4位置
             
-            // B12-R15-W10-B12 循环（反转方向）
+            // B12-R15-W10-B12 循环
             const temp3 = this.faces.front[11]; // B12
             this.faces.front[11] = this.faces.bottom[9]; // W10 -> B12位置
             this.faces.bottom[9] = this.faces.right[14]; // R15 -> W10位置
@@ -1042,26 +782,25 @@
         
         // DFR逆时针旋转90度
         rotateDFRCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateDFR();
             this.rotateDFR();
         }
         
-        // DBL转动逻辑 - 按照新的转角魔方规则（反转方向）
+        // DBL顺时针转90度
         rotateDBL() {
-            // W6-G16-O6-W6 循环（反转方向）
+            // W6-G16-O6-W6 循环
             const temp = this.faces.bottom[5]; // W6
             this.faces.bottom[5] = this.faces.left[5]; // O6 -> W6位置
             this.faces.left[5] = this.faces.back[15]; // G16 -> O6位置
             this.faces.back[15] = temp; // W6 -> G16位置
             
-            // W4-G5-O4-W4 循环（反转方向）
+            // W4-G5-O4-W4 循环
             const temp2 = this.faces.bottom[3]; // W4
             this.faces.bottom[3] = this.faces.left[3]; // O4 -> W4位置
             this.faces.left[3] = this.faces.back[4]; // G5 -> O4位置
             this.faces.back[4] = temp2; // W4 -> G5位置
             
-            // W15-G12-O15-W15 循环（反转方向）
+            // W15-G12-O15-W15 循环
             const temp3 = this.faces.bottom[14]; // W15
             this.faces.bottom[14] = this.faces.left[14]; // O15 -> W15位置
             this.faces.left[14] = this.faces.back[11]; // G12 -> O15位置
@@ -1070,26 +809,25 @@
         
         // DBL逆时针旋转90度
         rotateDBLCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateDBL();
             this.rotateDBL();
         }
         
-        // DBR转动逻辑 - 按照新的转角魔方规则（反转方向）
+        // DBR顺时针转90度
         rotateDBR() {
-            // R16-G6-W16-R16 循环（反转方向）
+            // R16-G6-W16-R16 循环
             const temp = this.faces.right[15]; // R16
             this.faces.right[15] = this.faces.bottom[15]; // W16 -> R16位置
             this.faces.bottom[15] = this.faces.back[5]; // G6 -> W16位置
             this.faces.back[5] = temp; // R16 -> G6位置
             
-            // R5-G4-W5-R5 循环（反转方向）
+            // R5-G4-W5-R5 循环
             const temp2 = this.faces.right[4]; // R5
             this.faces.right[4] = this.faces.bottom[4]; // W5 -> R5位置
             this.faces.bottom[4] = this.faces.back[3]; // G4 -> W5位置
             this.faces.back[3] = temp2; // R5 -> G4位置
             
-            // R12-G15-W12-R12 循环（反转方向）
+            // R12-G15-W12-R12 循环
             const temp3 = this.faces.right[11]; // R12
             this.faces.right[11] = this.faces.bottom[11]; // W12 -> R12位置
             this.faces.bottom[11] = this.faces.back[14]; // G15 -> W12位置
@@ -1098,70 +836,69 @@
         
         // DBR逆时针旋转90度
         rotateDBRCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateDBR();
             this.rotateDBR();
         }
         
-        // 后面顺时针旋转90度 - 按照新的转角魔方规则（反转方向）
+        // 后面顺时针旋转90度
         rotateBackClockwise() {
-            // R5-Y2-O1-W4-R5 循环（反转方向）
+            // R5-Y2-O1-W4-R5 循环
             const temp = this.faces.right[4]; // R5
             this.faces.right[4] = this.faces.bottom[3]; // W4 -> R5位置
             this.faces.bottom[3] = this.faces.left[0]; // O1 -> W4位置
             this.faces.left[0] = this.faces.top[1]; // Y2 -> O1位置
             this.faces.top[1] = temp; // R5 -> Y2位置
             
-            // R12-Y10-O7-W15-R12 循环（反转方向）
+            // R12-Y10-O7-W15-R12 循环
             const temp2 = this.faces.right[11]; // R12
             this.faces.right[11] = this.faces.bottom[14]; // W15 -> R12位置
             this.faces.bottom[14] = this.faces.left[6]; // O7 -> W15位置
             this.faces.left[6] = this.faces.top[9]; // Y10 -> O7位置
             this.faces.top[9] = temp2; // R12 -> Y10位置
             
-            // R14-Y11-O8-W17-R14 循环（反转方向）
+            // R14-Y11-O8-W17-R14 循环
             const temp3 = this.faces.right[13]; // R14
             this.faces.right[13] = this.faces.bottom[16]; // W17 -> R14位置
             this.faces.bottom[16] = this.faces.left[7]; // O8 -> W17位置
             this.faces.left[7] = this.faces.top[10]; // Y11 -> O8位置
             this.faces.top[10] = temp3; // R14 -> Y11位置
             
-            // R13-Y9-O6-W16-R13 循环（反转方向）
+            // R13-Y9-O6-W16-R13 循环
             const temp4 = this.faces.right[12]; // R13
             this.faces.right[12] = this.faces.bottom[15]; // W16 -> R13位置
             this.faces.bottom[15] = this.faces.left[5]; // O6 -> W16位置
             this.faces.left[5] = this.faces.top[8]; // Y9 -> O6位置
             this.faces.top[8] = temp4; // R13 -> Y9位置
             
-            // R2-Y1-O4-W5-R2 循环（反转方向）
+            // R2-Y1-O4-W5-R2 循环
             const temp5 = this.faces.right[1]; // R2
             this.faces.right[1] = this.faces.bottom[4]; // W5 -> R2位置
             this.faces.bottom[4] = this.faces.left[3]; // O4 -> W5位置
             this.faces.left[3] = this.faces.top[0]; // Y1 -> O4位置
             this.faces.top[0] = temp5; // R2 -> Y1位置
             
-            // 后面面内转动：G1-G4-G5-G2-G1 循环（顺时针方向）
+            // G1-G4-G5-G2-G1 循环
             const temp6 = this.faces.back[0]; // G1
             this.faces.back[0] = this.faces.back[3]; // G4 -> G1位置
             this.faces.back[3] = this.faces.back[4]; // G5 -> G4位置
             this.faces.back[4] = this.faces.back[1]; // G2 -> G5位置
             this.faces.back[1] = temp6; // G1 -> G2位置
             
-            // 后面面内转动：G9-G6-G16-G13-G9 循环（顺时针方向）
+            // G9-G6-G16-G13-G9 循环
             const temp7 = this.faces.back[8]; // G9
             this.faces.back[8] = this.faces.back[5]; // G6 -> G9位置
             this.faces.back[5] = this.faces.back[15]; // G16 -> G6位置
             this.faces.back[15] = this.faces.back[12]; // G13 -> G16位置
             this.faces.back[12] = temp7; // G9 -> G13位置
             
-            // 后面面内转动：G11-G8-G17-G14-G11 循环（顺时针方向）
+            // G11-G8-G17-G14-G11 循环
             const temp8 = this.faces.back[10]; // G11
             this.faces.back[10] = this.faces.back[7]; // G8 -> G11位置
             this.faces.back[7] = this.faces.back[16]; // G17 -> G8位置
             this.faces.back[16] = this.faces.back[13]; // G14 -> G17位置
             this.faces.back[13] = temp8; // G11 -> G14位置
             
-            // 后面面内转动：G10-G7-G15-G12-G10 循环（顺时针方向）
+            // G10-G7-G15-G12-G10 循环
             const temp9 = this.faces.back[9]; // G10
             this.faces.back[9] = this.faces.back[6]; // G7 -> G10位置
             this.faces.back[6] = this.faces.back[14]; // G15 -> G7位置
@@ -1171,71 +908,70 @@
         
         // 后面逆时针旋转90度
         rotateBackCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateBackClockwise();
             this.rotateBackClockwise();
             this.rotateBackClockwise();
         }
         
-        // 右面顺时针旋转90度 - 按照新的转角魔方规则（修正方向）
+        // 右面顺时针旋转90度
         rotateRightClockwise() {
-            // B2-Y2-G4-W2-B2 循环（反转方向）
-            const temp = this.faces.front[1]; // B2 (蓝色面第2个区域)
+            // B2-Y2-G4-W2-B2 循环
+            const temp = this.faces.front[1]; // B2
             this.faces.front[1] = this.faces.bottom[1]; // W2 -> B2位置
             this.faces.bottom[1] = this.faces.back[3]; // G4 -> W2位置
             this.faces.back[3] = this.faces.top[1]; // Y2 -> G4位置
             this.faces.top[1] = temp; // B2 -> Y2位置
             
-            // B13-Y13-G6-W13-B13 循环（反转方向）
+            // B13-Y13-G6-W13-B13 循环
             const temp2 = this.faces.front[12]; // B13
             this.faces.front[12] = this.faces.bottom[12]; // W13 -> B13位置
             this.faces.bottom[12] = this.faces.back[5]; // G6 -> W13位置
             this.faces.back[5] = this.faces.top[12]; // Y13 -> G6位置
             this.faces.top[12] = temp2; // B13 -> Y13位置
             
-            // B14-Y14-G8-W14-B14 循环（反转方向）
+            // B14-Y14-G8-W14-B14 循环
             const temp3 = this.faces.front[13]; // B14
             this.faces.front[13] = this.faces.bottom[13]; // W14 -> B14位置
             this.faces.bottom[13] = this.faces.back[7]; // G8 -> W14位置
             this.faces.back[7] = this.faces.top[13]; // Y14 -> G8位置
             this.faces.top[13] = temp3; // B14 -> Y14位置
             
-            // B12-Y12-G7-W12-B12 循环（反转方向）
+            // B12-Y12-G7-W12-B12 循环
             const temp4 = this.faces.front[11]; // B12
             this.faces.front[11] = this.faces.bottom[11]; // W12 -> B12位置
             this.faces.bottom[11] = this.faces.back[6]; // G7 -> W12位置
             this.faces.back[6] = this.faces.top[11]; // Y12 -> G7位置
             this.faces.top[11] = temp4; // B12 -> Y12位置
             
-            // B5-Y5-G1-W5-B5 循环（反转方向）
+            // B5-Y5-G1-W5-B5 循环
             const temp5 = this.faces.front[4]; // B5
             this.faces.front[4] = this.faces.bottom[4]; // W5 -> B5位置
             this.faces.bottom[4] = this.faces.back[0]; // G1 -> W5位置
             this.faces.back[0] = this.faces.top[4]; // Y5 -> G1位置
             this.faces.top[4] = temp5; // B5 -> Y5位置
             
-            // 右面面内转动：R9-R13-R16-R6-R9 循环
+            // R9-R13-R16-R6-R9 循环
             const temp6 = this.faces.right[8]; // R9
             this.faces.right[8] = this.faces.right[5]; // R6 -> R9位置
             this.faces.right[5] = this.faces.right[15]; // R16 -> R6位置
             this.faces.right[15] = this.faces.right[12]; // R13 -> R16位置
             this.faces.right[12] = temp6; // R9 -> R13位置
             
-            // 右面面内转动：R11-R14-R17-R8-R11 循环
+            // R11-R14-R17-R8-R11 循环
             const temp7 = this.faces.right[10]; // R11
             this.faces.right[10] = this.faces.right[7]; // R8 -> R11位置
             this.faces.right[7] = this.faces.right[16]; // R17 -> R8位置
             this.faces.right[16] = this.faces.right[13]; // R14 -> R17位置
             this.faces.right[13] = temp7; // R11 -> R14位置
             
-            // 右面面内转动：R10-R12-R15-R7-R10 循环
+            // R10-R12-R15-R7-R10 循环
             const temp8 = this.faces.right[9]; // R10
             this.faces.right[9] = this.faces.right[6]; // R7 -> R10位置
             this.faces.right[6] = this.faces.right[14]; // R15 -> R7位置
             this.faces.right[14] = this.faces.right[11]; // R12 -> R15位置
             this.faces.right[11] = temp8; // R10 -> R12位置
             
-            // 右面面内转动：R1-R2-R5-R4-R1 循环
+            // R1-R2-R5-R4-R1 循环
             const temp9 = this.faces.right[0]; // R1
             this.faces.right[0] = this.faces.right[3]; // R4 -> R1位置
             this.faces.right[3] = this.faces.right[4]; // R5 -> R4位置
@@ -1245,71 +981,70 @@
         
         // 右面逆时针旋转90度
         rotateRightCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateRightClockwise();
             this.rotateRightClockwise();
             this.rotateRightClockwise();
         }
         
-        // 左面顺时针旋转90度 - 按照新的转角魔方规则（反转方向）
+        // 左面顺时针旋转90度
         rotateLeftClockwise() {
-            // G5-Y1-B1-W1-G5 循环（反转方向）
+            // G5-Y1-B1-W1-G5 循环
             const temp = this.faces.back[4]; // G5
             this.faces.back[4] = this.faces.bottom[0]; // W1 -> G5位置
             this.faces.bottom[0] = this.faces.front[0]; // B1 -> W1位置
             this.faces.front[0] = this.faces.top[0]; // Y1 -> B1位置
             this.faces.top[0] = temp; // G5 -> Y1位置
             
-            // G12-Y7-B7-W7-G12 循环（反转方向）
+            // G12-Y7-B7-W7-G12 循环
             const temp2 = this.faces.back[11]; // G12
             this.faces.back[11] = this.faces.bottom[6]; // W7 -> G12位置
             this.faces.bottom[6] = this.faces.front[6]; // B7 -> W7位置
             this.faces.front[6] = this.faces.top[6]; // Y7 -> B7位置
             this.faces.top[6] = temp2; // G12 -> Y7位置
             
-            // G14-Y8-B8-W8-G14 循环（反转方向）
+            // G14-Y8-B8-W8-G14 循环
             const temp3 = this.faces.back[13]; // G14
             this.faces.back[13] = this.faces.bottom[7]; // W8 -> G14位置
             this.faces.bottom[7] = this.faces.front[7]; // B8 -> W8位置
             this.faces.front[7] = this.faces.top[7]; // Y8 -> B8位置
             this.faces.top[7] = temp3; // G14 -> Y8位置
             
-            // G13-Y6-B6-W6-G13 循环（反转方向）
+            // G13-Y6-B6-W6-G13 循环
             const temp4 = this.faces.back[12]; // G13
             this.faces.back[12] = this.faces.bottom[5]; // W6 -> G13位置
             this.faces.bottom[5] = this.faces.front[5]; // B6 -> W6位置
             this.faces.front[5] = this.faces.top[5]; // Y6 -> B6位置
             this.faces.top[5] = temp4; // G13 -> Y6位置
             
-            // G2-Y4-B4-W4-G2 循环（反转方向）
+            // G2-Y4-B4-W4-G2 循环
             const temp5 = this.faces.back[1]; // G2
             this.faces.back[1] = this.faces.bottom[3]; // W4 -> G2位置
             this.faces.bottom[3] = this.faces.front[3]; // B4 -> W4位置
             this.faces.front[3] = this.faces.top[3]; // Y4 -> B4位置
             this.faces.top[3] = temp5; // G2 -> Y4位置
             
-            // 左面面内转动：O1-O4-O5-O2-O1 循环（顺时针方向）
+            // O1-O4-O5-O2-O1 循环
             const temp6 = this.faces.left[0]; // O1
             this.faces.left[0] = this.faces.left[3]; // O4 -> O1位置
             this.faces.left[3] = this.faces.left[4]; // O5 -> O4位置
             this.faces.left[4] = this.faces.left[1]; // O2 -> O5位置
             this.faces.left[1] = temp6; // O1 -> O2位置
             
-            // 左面面内转动：O9-O6-O16-O13-O9 循环（顺时针方向）
+            // O9-O6-O16-O13-O9 循环
             const temp7 = this.faces.left[8]; // O9
             this.faces.left[8] = this.faces.left[5]; // O6 -> O9位置
             this.faces.left[5] = this.faces.left[15]; // O16 -> O6位置
             this.faces.left[15] = this.faces.left[12]; // O13 -> O16位置
             this.faces.left[12] = temp7; // O9 -> O13位置
             
-            // 左面面内转动：O11-O8-O17-O14-O11 循环（顺时针方向）
+            // O11-O8-O17-O14-O11 循环
             const temp8 = this.faces.left[10]; // O11
             this.faces.left[10] = this.faces.left[7]; // O8 -> O11位置
             this.faces.left[7] = this.faces.left[16]; // O17 -> O8位置
             this.faces.left[16] = this.faces.left[13]; // O14 -> O17位置
             this.faces.left[13] = temp8; // O11 -> O14位置
             
-            // 左面面内转动：O10-O7-O15-O12-O10 循环（顺时针方向）
+            // O10-O7-O15-O12-O10 循环
             const temp9 = this.faces.left[9]; // O10
             this.faces.left[9] = this.faces.left[6]; // O7 -> O10位置
             this.faces.left[6] = this.faces.left[14]; // O15 -> O7位置
@@ -1319,71 +1054,70 @@
         
         // 左面逆时针旋转90度
         rotateLeftCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateLeftClockwise();
             this.rotateLeftClockwise();
             this.rotateLeftClockwise();
         }
         
-        // 上面顺时针旋转90度（反转方向）
+        // 上面顺时针旋转90度
         rotateUpClockwise() {
-            // O1-G1-R1-B1-O1 循环（反转方向）
+            // O1-G1-R1-B1-O1 循环
             const temp = this.faces.left[0]; // O1
             this.faces.left[0] = this.faces.front[0]; // B1 -> O1位置
             this.faces.front[0] = this.faces.right[0]; // R1 -> B1位置
             this.faces.right[0] = this.faces.back[0]; // G1 -> R1位置
             this.faces.back[0] = temp; // O1 -> G1位置
             
-            // O9-G9-R9-B9-O9 循环（反转方向）
+            // O9-G9-R9-B9-O9 循环
             const temp2 = this.faces.left[8]; // O9
             this.faces.left[8] = this.faces.front[8]; // B9 -> O9位置
             this.faces.front[8] = this.faces.right[8]; // R9 -> B9位置
             this.faces.right[8] = this.faces.back[8]; // G9 -> R9位置
             this.faces.back[8] = temp2; // O9 -> G9位置
             
-            // O11-G11-R11-B11-O11 循环（反转方向）
+            // O11-G11-R11-B11-O11 循环
             const temp3 = this.faces.left[10]; // O11
             this.faces.left[10] = this.faces.front[10]; // B11 -> O11位置
             this.faces.front[10] = this.faces.right[10]; // R11 -> B11位置
             this.faces.right[10] = this.faces.back[10]; // G11 -> R11位置
             this.faces.back[10] = temp3; // O11 -> G11位置
             
-            // O10-G10-R10-B10-O10 循环（反转方向）
+            // O10-G10-R10-B10-O10 循环
             const temp4 = this.faces.left[9]; // O10
             this.faces.left[9] = this.faces.front[9]; // B10 -> O10位置
             this.faces.front[9] = this.faces.right[9]; // R10 -> B10位置
             this.faces.right[9] = this.faces.back[9]; // G10 -> R10位置
             this.faces.back[9] = temp4; // O10 -> G10位置
             
-            // O2-G2-R2-B2-O2 循环（反转方向）
+            // O2-G2-R2-B2-O2 循环
             const temp5 = this.faces.left[1]; // O2
             this.faces.left[1] = this.faces.front[1]; // B2 -> O2位置
             this.faces.front[1] = this.faces.right[1]; // R2 -> B2位置
             this.faces.right[1] = this.faces.back[1]; // G2 -> R2位置
             this.faces.back[1] = temp5; // O2 -> G2位置
             
-            // 上面面内转动：Y1-Y4-Y5-Y2-Y1 循环（顺时针方向）
+            // Y1-Y4-Y5-Y2-Y1 循环
             const temp6 = this.faces.top[0]; // Y1
             this.faces.top[0] = this.faces.top[3]; // Y4 -> Y1位置
             this.faces.top[3] = this.faces.top[4]; // Y5 -> Y4位置
             this.faces.top[4] = this.faces.top[1]; // Y2 -> Y5位置
             this.faces.top[1] = temp6; // Y1 -> Y2位置
             
-            // 上面面内转动：Y9-Y6-Y16-Y13-Y9 循环（顺时针方向）
+            // Y9-Y6-Y16-Y13-Y9 循环
             const temp7 = this.faces.top[8]; // Y9
             this.faces.top[8] = this.faces.top[5]; // Y6 -> Y9位置
             this.faces.top[5] = this.faces.top[15]; // Y16 -> Y6位置
             this.faces.top[15] = this.faces.top[12]; // Y13 -> Y16位置
             this.faces.top[12] = temp7; // Y9 -> Y13位置
             
-            // 上面面内转动：Y11-Y8-Y17-Y14-Y11 循环（顺时针方向）
+            // Y11-Y8-Y17-Y14-Y11 循环
             const temp8 = this.faces.top[10]; // Y11
             this.faces.top[10] = this.faces.top[7]; // Y8 -> Y11位置
             this.faces.top[7] = this.faces.top[16]; // Y17 -> Y8位置
             this.faces.top[16] = this.faces.top[13]; // Y14 -> Y17位置
             this.faces.top[13] = temp8; // Y11 -> Y14位置
             
-            // 上面面内转动：Y10-Y7-Y15-Y12-Y10 循环（顺时针方向）
+            // Y10-Y7-Y15-Y12-Y10 循环
             const temp9 = this.faces.top[9]; // Y10
             this.faces.top[9] = this.faces.top[6]; // Y7 -> Y10位置
             this.faces.top[6] = this.faces.top[14]; // Y15 -> Y7位置
@@ -1393,71 +1127,46 @@
         
         // 上面逆时针旋转90度
         rotateUpCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateUpClockwise();
             this.rotateUpClockwise();
             this.rotateUpClockwise();
         }
         
-        // 下面顺时针旋转90度（反转方向）
+        // 下面顺时针旋转90度
         rotateDownClockwise() {
-            // W1-R1-G1-O1-W1 循环（反转方向）
-            const temp = this.faces.bottom[0]; // W1
-            this.faces.bottom[0] = this.faces.right[0]; // R1 -> W1位置
-            this.faces.right[0] = this.faces.back[0]; // G1 -> R1位置
-            this.faces.back[0] = this.faces.left[0]; // O1 -> G1位置
-            this.faces.left[0] = temp; // W1 -> O1位置
-            
-            // W9-R9-G9-O9-W9 循环（反转方向）
-            const temp2 = this.faces.bottom[8]; // W9
-            this.faces.bottom[8] = this.faces.right[8]; // R9 -> W9位置
-            this.faces.right[8] = this.faces.back[8]; // G9 -> R9位置
-            this.faces.back[8] = this.faces.left[8]; // O9 -> G9位置
-            this.faces.left[8] = temp2; // W9 -> O9位置
-            
-            // W11-R11-G11-O11-W11 循环（反转方向）
-            const temp3 = this.faces.bottom[10]; // W11
-            this.faces.bottom[10] = this.faces.right[10]; // R11 -> W11位置
-            this.faces.right[10] = this.faces.back[10]; // G11 -> R11位置
-            this.faces.back[10] = this.faces.left[10]; // O11 -> G11位置
-            this.faces.left[10] = temp3; // W11 -> O11位置
-            
-            // W10-R10-G10-O10-W10 循环（反转方向）
-            const temp4 = this.faces.bottom[9]; // W10
-            this.faces.bottom[9] = this.faces.right[9]; // R10 -> W10位置
-            this.faces.right[9] = this.faces.back[9]; // G10 -> R10位置
-            this.faces.back[9] = this.faces.left[9]; // O10 -> G10位置
-            this.faces.left[9] = temp4; // W10 -> O10位置
-            
-            // W2-R2-G2-O2-W2 循环（反转方向）
-            const temp5 = this.faces.bottom[1]; // W2
-            this.faces.bottom[1] = this.faces.right[1]; // R2 -> W2位置
-            this.faces.right[1] = this.faces.back[1]; // G2 -> R2位置
-            this.faces.back[1] = this.faces.left[1]; // O2 -> G2位置
-            this.faces.left[1] = temp5; // W2 -> O2位置
-            
-            // 下面面内转动：W1-W4-W5-W2-W1 循环（顺时针方向）
+            const bottomStrip = [3, 14, 16, 15, 4];
+
+            // 从 D 面外侧观察的顺时针方向：F -> R -> B -> L -> F。
+            bottomStrip.forEach(index => {
+                const temp = this.faces.front[index];
+                this.faces.front[index] = this.faces.left[index];
+                this.faces.left[index] = this.faces.back[index];
+                this.faces.back[index] = this.faces.right[index];
+                this.faces.right[index] = temp;
+            });
+
+            // W1-W4-W5-W2-W1 循环
             const temp6 = this.faces.bottom[0]; // W1
             this.faces.bottom[0] = this.faces.bottom[3]; // W4 -> W1位置
             this.faces.bottom[3] = this.faces.bottom[4]; // W5 -> W4位置
             this.faces.bottom[4] = this.faces.bottom[1]; // W2 -> W5位置
             this.faces.bottom[1] = temp6; // W1 -> W2位置
             
-            // 下面面内转动：W9-W6-W16-W13-W9 循环（顺时针方向）
+            // W9-W6-W16-W13-W9 循环
             const temp7 = this.faces.bottom[8]; // W9
             this.faces.bottom[8] = this.faces.bottom[5]; // W6 -> W9位置
             this.faces.bottom[5] = this.faces.bottom[15]; // W16 -> W6位置
             this.faces.bottom[15] = this.faces.bottom[12]; // W13 -> W16位置
             this.faces.bottom[12] = temp7; // W9 -> W13位置
             
-            // 下面面内转动：W11-W8-W17-W14-W11 循环（顺时针方向）
+            // W11-W8-W17-W14-W11 循环
             const temp8 = this.faces.bottom[10]; // W11
             this.faces.bottom[10] = this.faces.bottom[7]; // W8 -> W11位置
             this.faces.bottom[7] = this.faces.bottom[16]; // W17 -> W8位置
             this.faces.bottom[16] = this.faces.bottom[13]; // W14 -> W17位置
             this.faces.bottom[13] = temp8; // W11 -> W14位置
             
-            // 下面面内转动：W10-W7-W15-W12-W10 循环（顺时针方向）
+            // W10-W7-W15-W12-W10 循环
             const temp9 = this.faces.bottom[9]; // W10
             this.faces.bottom[9] = this.faces.bottom[6]; // W7 -> W10位置
             this.faces.bottom[6] = this.faces.bottom[14]; // W15 -> W7位置
@@ -1467,7 +1176,6 @@
         
         // 下面逆时针旋转90度
         rotateDownCounterClockwise() {
-            // 执行三次顺时针旋转
             this.rotateDownClockwise();
             this.rotateDownClockwise();
             this.rotateDownClockwise();
@@ -1499,18 +1207,18 @@
                 'd': () => this.rotateD(),
                 'b': () => this.rotateB(),
                 'l': () => this.rotateL(),
-                "u'": () => this.rotateUPrime(),
-                "f'": () => this.rotateFPrime(),
-                "r'": () => this.rotateRPrime(),
-                "d'": () => this.rotateDPrime(),
-                "b'": () => this.rotateBPrime(),
-                "l'": () => this.rotateLPrime(),
                 'u2': () => { this.rotateU(); this.rotateU(); },
                 'f2': () => { this.rotateF(); this.rotateF(); },
                 'r2': () => { this.rotateR(); this.rotateR(); },
                 'd2': () => { this.rotateD(); this.rotateD(); },
                 'b2': () => { this.rotateB(); this.rotateB(); },
-                'l2': () => { this.rotateL(); this.rotateL(); }
+                'l2': () => { this.rotateL(); this.rotateL(); },
+                "u'": () => { this.rotateU(); this.rotateU(); this.rotateU(); },
+                "f'": () => { this.rotateF(); this.rotateF(); this.rotateF(); },
+                "r'": () => { this.rotateR(); this.rotateR(); this.rotateR(); },
+                "d'": () => { this.rotateD(); this.rotateD(); this.rotateD(); },
+                "b'": () => { this.rotateB(); this.rotateB(); this.rotateB(); },
+                "l'": () => { this.rotateL(); this.rotateL(); this.rotateL(); }
             };
 
             const move = moveMap[axis];
@@ -1579,67 +1287,7 @@
             temp = f.bottom3[0]; f.bottom3[0] = f.top3[0]; f.top3[0] = f.top2[0]; f.top2[0] = f.bottom2[0]; f.bottom2[0] = temp;
             temp = f.bottom3[6]; f.bottom3[6] = f.top3[6]; f.top3[6] = f.top2[6]; f.top2[6] = f.bottom2[6]; f.bottom2[6] = temp;
         }
-        
-        rotateUPrime() {
-            const f = this.faces;
-            let temp;
-            
-            temp = f.top4[3]; f.top4[3] = f.top3[5]; f.top3[5] = f.top2[3]; f.top2[3] = f.top1[5]; f.top1[5] = temp;
-            temp = f.top4[5]; f.top4[5] = f.top3[3]; f.top3[3] = f.top2[5]; f.top2[5] = f.top1[3]; f.top1[3] = temp;
-            temp = f.top4[4]; f.top4[4] = f.top3[4]; f.top3[4] = f.top2[4]; f.top2[4] = f.top1[4]; f.top1[4] = temp;
-            temp = f.top4[6]; f.top4[6] = f.top3[6]; f.top3[6] = f.top2[6]; f.top2[6] = f.top1[6]; f.top1[6] = temp;
-        }
-        
-        rotateFPrime() {
-            const f = this.faces;
-            let temp;
-            
-            temp = f.top4[3]; f.top4[3] = f.bottom4[1]; f.bottom4[1] = f.bottom3[3]; f.bottom3[3] = f.top3[1]; f.top3[1] = temp;
-            temp = f.top4[1]; f.top4[1] = f.bottom4[3]; f.bottom4[3] = f.bottom3[1]; f.bottom3[1] = f.top3[3]; f.top3[3] = temp;
-            temp = f.top4[2]; f.top4[2] = f.bottom4[2]; f.bottom4[2] = f.bottom3[2]; f.bottom3[2] = f.top3[2]; f.top3[2] = temp;
-            temp = f.top4[6]; f.top4[6] = f.bottom4[6]; f.bottom4[6] = f.bottom3[6]; f.bottom3[6] = f.top3[6]; f.top3[6] = temp;
-        }
-        
-        rotateRPrime() {
-            const f = this.faces;
-            let temp;
-            
-            temp = f.top4[5]; f.top4[5] = f.top1[1]; f.top1[1] = f.bottom1[5]; f.bottom1[5] = f.bottom4[1]; f.bottom4[1] = temp;
-            temp = f.top4[1]; f.top4[1] = f.top1[5]; f.top1[5] = f.bottom1[1]; f.bottom1[1] = f.bottom4[5]; f.bottom4[5] = temp;
-            temp = f.top4[0]; f.top4[0] = f.top1[0]; f.top1[0] = f.bottom1[0]; f.bottom1[0] = f.bottom4[0]; f.bottom4[0] = temp;
-            temp = f.top4[6]; f.top4[6] = f.top1[6]; f.top1[6] = f.bottom1[6]; f.bottom1[6] = f.bottom4[6]; f.bottom4[6] = temp;
-        }        
 
-        rotateDPrime() {
-            const f = this.faces;
-            let temp;
-            
-            temp = f.bottom1[3]; f.bottom1[3] = f.bottom2[5]; f.bottom2[5] = f.bottom3[3]; f.bottom3[3] = f.bottom4[5]; f.bottom4[5] = temp;
-            temp = f.bottom1[5]; f.bottom1[5] = f.bottom2[3]; f.bottom2[3] = f.bottom3[5]; f.bottom3[5] = f.bottom4[3]; f.bottom4[3] = temp;
-            temp = f.bottom1[4]; f.bottom1[4] = f.bottom2[4]; f.bottom2[4] = f.bottom3[4]; f.bottom3[4] = f.bottom4[4]; f.bottom4[4] = temp;
-            temp = f.bottom1[6]; f.bottom1[6] = f.bottom2[6]; f.bottom2[6] = f.bottom3[6]; f.bottom3[6] = f.bottom4[6]; f.bottom4[6] = temp;
-        }
-
-        rotateBPrime() {
-            const f = this.faces;
-            let temp;
-            
-            temp = f.top2[3]; f.top2[3] = f.bottom2[1]; f.bottom2[1] = f.bottom1[3]; f.bottom1[3] = f.top1[1]; f.top1[1] = temp;
-            temp = f.top2[1]; f.top2[1] = f.bottom2[3]; f.bottom2[3] = f.bottom1[1]; f.bottom1[1] = f.top1[3]; f.top1[3] = temp;
-            temp = f.top2[2]; f.top2[2] = f.bottom2[2]; f.bottom2[2] = f.bottom1[2]; f.bottom1[2] = f.top1[2]; f.top1[2] = temp;
-            temp = f.top2[6]; f.top2[6] = f.bottom2[6]; f.bottom2[6] = f.bottom1[6]; f.bottom1[6] = f.top1[6]; f.top1[6] = temp;
-        }
-
-        rotateLPrime() {
-            const f = this.faces;
-            let temp;
-            
-            temp = f.bottom3[5]; f.bottom3[5] = f.bottom2[1]; f.bottom2[1] = f.top2[5]; f.top2[5] = f.top3[1]; f.top3[1] = temp;
-            temp = f.bottom3[1]; f.bottom3[1] = f.bottom2[5]; f.bottom2[5] = f.top2[1]; f.top2[1] = f.top3[5]; f.top3[5] = temp;
-            temp = f.bottom3[0]; f.bottom3[0] = f.bottom2[0]; f.bottom2[0] = f.top2[0]; f.top2[0] = f.bottom2[0]; f.bottom2[0] = temp;
-            temp = f.bottom3[6]; f.bottom3[6] = f.bottom2[6]; f.bottom2[6] = f.top2[6]; f.top2[6] = f.bottom2[6]; f.bottom2[6] = temp;
-        }      
-        
         scramble(moves = 20) {
             const axes = ['u', 'f', 'r', 'd', 'b', 'l'];
             const angles = [90, -90];
@@ -1673,88 +1321,95 @@
         }
         
         rotate(axis) {
-            switch(axis) {
-                case 'RU': this.rotateRU(); break;
-                case 'RD': this.rotateRD(); break;
-                case 'LU': this.rotateLU(); break;
-                case 'LD': this.rotateLD(); break;
-                case "RU'": this.rotateRU(); this.rotateRU(); break;
-                case "RD'": this.rotateRD(); this.rotateRD(); break;
-                case "LU'": this.rotateLU(); this.rotateLU(); break;
-                case "LD'": this.rotateLD(); this.rotateLD(); break;
+            const moveMap = {
+                'R': () => this.rotateR(),
+                "R'": () => { this.rotateR(); this.rotateR(); },
+                'U': () => this.rotateU(),
+                "U'": () => { this.rotateU(); this.rotateU(); },
+                'F': () => this.rotateF(),
+                "F'": () => { this.rotateF(); this.rotateF(); },
+                'L': () => this.rotateL(),
+                "L'": () => { this.rotateL(); this.rotateL(); }
+            };
+
+            const move = moveMap[axis];
+            if (move) {
+                move();
+                this.rotationHistory.push(axis);
             }
         }
         
-        rotateRU() {
+        rotateR() {
             const f = this.faces;
             let temp;
 
-            // RU旋转逻辑: VII2-II3-V1-VII2 (正向)
-            temp = f.bottom3[1]; f.bottom3[1] = f.bottom1[0]; f.bottom1[0] = f.top2[2]; f.top2[2] = temp; // 循环完成
-            // VIII1-III3-I2-VIII1 (正向)
-            temp = f.bottom4[0]; f.bottom4[0] = f.top1[1]; f.top1[1] = f.top3[2]; f.top3[2] = temp; // 循环完成
-            // VIII2-III1-I3-VIII2 (正向)
-            temp = f.bottom4[1]; f.bottom4[1] = f.top1[2]; f.top1[2] = f.top3[0]; f.top3[0] = temp; // 循环完成
-            // VIII4-III4-I4-VIII4 (正向)
-            temp = f.bottom4[3]; f.bottom4[3] = f.top1[3]; f.top1[3] = f.top3[3]; f.top3[3] = temp; // 循环完成
-            // IV1-IV2-IV3-IV1 (正向)
-            temp = f.top4[0]; f.top4[0] = f.top4[2]; f.top4[2] = f.top4[1]; f.top4[1] = temp;
-        }
-
-        rotateRD() {
-            const f = this.faces;
-            let temp;
-
-            // RD旋转逻辑: III1-I2-VI3-III1 (正向)
-            temp = f.top3[0]; f.top3[0] = f.bottom2[2]; f.bottom2[2] = f.top1[1]; f.top1[1] = temp; // 循环完成
-            // VII2-IV1-V3-VII2 (正向)
-            temp = f.bottom3[1]; f.bottom3[1] = f.bottom1[2]; f.bottom1[2] = f.top4[0]; f.top4[0] = temp; // 循环完成
-            // VII3-IV2-V1-VII3 (正向)
-            temp = f.bottom3[2]; f.bottom3[2] = f.bottom1[0]; f.bottom1[0] = f.top4[1]; f.top4[1] = temp; // 循环完成
-            // VII4-IV4-V4-VII4 (正向)
-            temp = f.bottom3[3]; f.bottom3[3] = f.bottom1[3]; f.bottom1[3] = f.top4[3]; f.top4[3] = temp; // 循环完成
-            // VIII1-VIII2-VIII3-VIII1 (正向)
+            // III1 → I2 → VI3 → III1
+            temp = f.top3[0]; f.top3[0] = f.bottom2[2]; f.bottom2[2] = f.top1[1]; f.top1[1] = temp;
+            // VII2 → IV1 → V3 → VII2
+            temp = f.bottom3[1]; f.bottom3[1] = f.bottom1[2]; f.bottom1[2] = f.top4[0]; f.top4[0] = temp;
+            // VII3 → IV2 → V1 → VII3
+            temp = f.bottom3[2]; f.bottom3[2] = f.bottom1[0]; f.bottom1[0] = f.top4[1]; f.top4[1] = temp;
+            // VII4 → IV4 → V4 → VII4
+            temp = f.bottom3[3]; f.bottom3[3] = f.bottom1[3]; f.bottom1[3] = f.top4[3]; f.top4[3] = temp;
+            // VIII1 → VIII2 → VIII3 → VIII1
             temp = f.bottom4[0]; f.bottom4[0] = f.bottom4[2]; f.bottom4[2] = f.bottom4[1]; f.bottom4[1] = temp;
         }
 
-        rotateLU() {
+        rotateF() {
             const f = this.faces;
             let temp;
 
-            // LU旋转逻辑: I3-VIII1-VI2-I3 (反向)
-            temp = f.top1[2]; f.top1[2] = f.bottom2[1]; f.bottom2[1] = f.bottom4[0]; f.bottom4[0] = temp; // 循环完成
-            // IV2-VII1-II3-IV2 (反向)
-            temp = f.top4[1]; f.top4[1] = f.top2[2]; f.top2[2] = f.bottom3[0]; f.bottom3[0] = temp; // 循环完成
-            // IV3-VII2-II1-IV3 (反向)
-            temp = f.top4[2]; f.top4[2] = f.top2[0]; f.top2[0] = f.bottom3[1]; f.bottom3[1] = temp; // 循环完成
-            // IV4-VII4-II4-IV4 (反向)
-            temp = f.top4[3]; f.top4[3] = f.top2[3]; f.top2[3] = f.bottom3[3]; f.bottom3[3] = temp; // 循环完成
-            // III1-III2-III3-III1 (反向)
-            temp = f.top3[0]; f.top3[0] = f.top3[2]; f.top3[2] = f.top3[1]; f.top3[1] = temp;
-        }
-
-        rotateLD() {
-            const f = this.faces;
-            let temp;
-
-            // LD旋转逻辑: IV2-V3-II1-IV2 (反向)
-            temp = f.top4[1]; f.top4[1] = f.top2[0]; f.top2[0] = f.bottom1[2]; f.bottom1[2] = temp; // 循环完成
-            // VIII1-VI3-III2-VIII1 (反向)
-            temp = f.bottom4[0]; f.bottom4[0] = f.top3[1]; f.top3[1] = f.bottom2[2]; f.bottom2[2] = temp; // 循环完成
-            // VIII3-VI2-III1-VIII3 (反向)
-            temp = f.bottom4[2]; f.bottom4[2] = f.top3[0]; f.top3[0] = f.bottom2[1]; f.bottom2[1] = temp; // 循环完成
-            // VIII4-VI4-III4-VIII4 (反向)
-            temp = f.bottom4[3]; f.bottom4[3] = f.top3[3]; f.top3[3] = f.bottom2[3]; f.bottom2[3] = temp; // 循环完成
-            // VII1-VII2-VII3-VII1 (反向)
+            // IV2 → V3 → II1 → IV2
+            temp = f.top4[1]; f.top4[1] = f.top2[0]; f.top2[0] = f.bottom1[2]; f.bottom1[2] = temp;
+            // VIII1 → VI3 → III2 → VIII1
+            temp = f.bottom4[0]; f.bottom4[0] = f.top3[1]; f.top3[1] = f.bottom2[2]; f.bottom2[2] = temp;
+            // VIII3 → VI2 → III1 → VIII3
+            temp = f.bottom4[2]; f.bottom4[2] = f.top3[0]; f.top3[0] = f.bottom2[1]; f.bottom2[1] = temp;
+            // VIII4 → VI4 → III4 → VIII4
+            temp = f.bottom4[3]; f.bottom4[3] = f.top3[3]; f.top3[3] = f.bottom2[3]; f.bottom2[3] = temp;
+            // VII1 → VII2 → VII3 → VII1
             temp = f.bottom3[0]; f.bottom3[0] = f.bottom3[2]; f.bottom3[2] = f.bottom3[1]; f.bottom3[1] = temp;
         }
 
+        rotateU() {
+            const f = this.faces;
+            let temp;
+
+            // I3-VIII1-VI2-I3
+            temp = f.top1[2]; f.top1[2] = f.bottom2[1]; f.bottom2[1] = f.bottom4[0]; f.bottom4[0] = temp; // 循环完成
+            // IV2-VII1-II3-IV2
+            temp = f.top4[1]; f.top4[1] = f.top2[2]; f.top2[2] = f.bottom3[0]; f.bottom3[0] = temp; // 循环完成
+            // IV3-VII2-II1-IV3
+            temp = f.top4[2]; f.top4[2] = f.top2[0]; f.top2[0] = f.bottom3[1]; f.bottom3[1] = temp; // 循环完成
+            // IV4-VII4-II4-IV4
+            temp = f.top4[3]; f.top4[3] = f.top2[3]; f.top2[3] = f.bottom3[3]; f.bottom3[3] = temp; // 循环完成
+            // III1-III2-III3-III1
+            temp = f.top3[0]; f.top3[0] = f.top3[2]; f.top3[2] = f.top3[1]; f.top3[1] = temp;
+        }
+
+        rotateL() {
+            const f = this.faces;
+            let temp;
+
+            // III2 → VIII3 → I1 → III2
+            temp = f.top3[1]; f.top3[1] = f.top1[0]; f.top1[0] = f.bottom4[2]; f.bottom4[2] = temp;
+            // VII1 → V3 → II2 → VII1
+            temp = f.bottom3[0]; f.bottom3[0] = f.top2[1]; f.top2[1] = f.bottom1[2]; f.bottom1[2] = temp;
+            // VII3 → V2 → II1 → VII3
+            temp = f.bottom3[2]; f.bottom3[2] = f.top2[0]; f.top2[0] = f.bottom1[1]; f.bottom1[1] = temp;
+            // VII4 → V4 → II4 → VII4
+            temp = f.bottom3[3]; f.bottom3[3] = f.top2[3]; f.top2[3] = f.bottom1[3]; f.bottom1[3] = temp;
+            // VI1 → VI2 → VI3 → VI1
+            temp = f.bottom2[0]; f.bottom2[0] = f.bottom2[2]; f.bottom2[2] = f.bottom2[1]; f.bottom2[1] = temp;
+        }
+
         scramble(moves = 20) {
-            const axes = ['u', 'f', 'r', 'd', 'b', 'l'];
-            const angles = [90, -90];
+            const axes = ['R', 'U', 'F', 'L'];
+            const suffixes = ['', "'"];
             for (let i = 0; i < moves; i++) {
                 const axis = axes[Math.floor(Math.random() * axes.length)];
-                this.rotate(axis);
+                const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+                this.rotate(axis + suffix);
             }
         }
         
@@ -1979,17 +1634,17 @@
                 const lastMoveBase = lastMove.replace(/[\'2]/g, '');
                 const moveBase = move.replace(/[\'2]/g, '');
                 
-                // 如果基础操作相同，则是冗余操作
+                // 检查是否是相同操作
                 if (lastMoveBase === moveBase) {
                     return false;
                 }
                 
-                // 检查是否是逆操作（如R和R'）
+                // 检查是否是逆操作
                 if (lastMove === move + '\'' || lastMove + '\'' === move) {
                     return false;
                 }
                 
-                // 检查是否是2倍操作（如R和R2）
+                // 检查是否是2倍操作
                 if (lastMove + '2' === move || move + '2' === lastMove) {
                     return false;
                 }
@@ -2155,57 +1810,21 @@
         }
 
         generate() {
-            // 定义所有可用的操作（内部使用RU,RD,LU,LD）
-            const allMoves = ['RU', 'RD', 'LU', 'LD', "RU'", "RD'", "LU'", "LD'"];
+            const axes = ['R', 'U', 'F', 'L'];
+            const suffixes = ['', "'"];
+            const scramble = [];
+            let lastAxis = null;
 
-            // 定义同向组（同一方向，如RU和RU'，也包括RU和RU）
-            const sameDirection = {
-                'RU': ["RU'", "RU"],
-                'RD': ["RD'", "RD"],
-                'LU': ["LU'", "LU"],
-                'LD': ["LD'", "LD"],
-                "RU'": ["RU", "RU'"],
-                "RD'": ["RD", "RD'"],
-                "LU'": ["LU", "LU'"],
-                "LD'": ["LD", "LD'"]
-            };
-
-            // 显示映射：RU->R, RD->F, LU->U, LD->L
-            const displayMap = {
-                'RU': 'R', "RU'": "R'",
-                'RD': 'F', "RD'": "F'",
-                'LU': 'U', "LU'": "U'",
-                'LD': 'L', "LD'": "L'"
-            };
-
-            let scramble = [];
-            let displayScramble = [];
-            let lastMove = null;
-
-            // 生成8步打乱公式
+            // 生成 8 步；同一个轴（含正、逆方向）不能连续出现。
             for (let i = 0; i < 8; i++) {
-                let availableMoves = allMoves.filter(move => {
-                    // 限制：同一方向不能连续使用（包括相同的操作）
-                    if (lastMove && sameDirection[lastMove].includes(move)) {
-                        return false;
-                    }
-
-                    return true;
-                });
-
-                // 如果没有可用操作，使用所有操作（避免死循环）
-                if (availableMoves.length === 0) {
-                    availableMoves = allMoves;
-                }
-
-                // 随机选择一个可用操作
-                const selectedMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-                scramble.push(selectedMove);
-                displayScramble.push(displayMap[selectedMove]);
-                lastMove = selectedMove;
+                const availableAxes = axes.filter(axis => axis !== lastAxis);
+                const axis = availableAxes[Math.floor(Math.random() * availableAxes.length)];
+                const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+                scramble.push(axis + suffix);
+                lastAxis = axis;
             }
 
-            return displayScramble.join(' ');
+            return scramble.join(' ');
         }
     }
 
@@ -2873,20 +2492,34 @@
         }
 
         renderToCoordinateSVG(container, model, svgConfig) {
-            // 转角三阶使用Canvas渲染，非SVG。创建Canvas网格。
+            // 转角三阶使用 Canvas 渲染。外层容器继续负责居中，
+            // 内层 grid 只负责六个面的十字展开，避免覆盖父容器的 flex 布局。
             const faceNames = ['top', 'bottom', 'front', 'back', 'left', 'right'];
-            const faceLabels = { top: 'U', bottom: 'D', front: 'F', back: 'B', left: 'L', right: 'R' };
-            
-            // 使用div创建网格布局
             container.innerHTML = '';
-            container.style.display = 'grid';
-            container.style.gridTemplateColumns = 'repeat(4, 130px)';
-            container.style.gridTemplateRows = 'repeat(3, 130px)';
-            container.style.gap = '2px';
-            container.style.maxWidth = '700px';
-            container.style.margin = '0 auto';
-            
-            // 面布局为十字形：U在上方，L-F-R-B在中间行，D在下方
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.justifyContent = 'center';
+
+            const gap = 2;
+            const availableWidth = Math.max(160, container.clientWidth - 16);
+            const availableHeight = Math.max(120, container.clientHeight - 16);
+            const faceSize = Math.max(36, Math.floor(Math.min(
+                130,
+                (availableWidth - gap * 3) / 4,
+                (availableHeight - gap * 2) / 3
+            )));
+
+            const grid = document.createElement('div');
+            grid.className = 'coordinate-corner-net';
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = `repeat(4, ${faceSize}px)`;
+            grid.style.gridTemplateRows = `repeat(3, ${faceSize}px)`;
+            grid.style.gap = `${gap}px`;
+            grid.style.width = `${faceSize * 4 + gap * 3}px`;
+            grid.style.height = `${faceSize * 3 + gap * 2}px`;
+            grid.style.flex = '0 0 auto';
+
+            // 面布局为十字形：U 在上方，L-F-R-B 在中间行，D 在下方。
             const facePositions = {
                 top: { row: 1, col: 2 },
                 left: { row: 2, col: 1 },
@@ -2895,47 +2528,33 @@
                 back: { row: 2, col: 4 },
                 bottom: { row: 3, col: 2 }
             };
-            
+
             faceNames.forEach(faceName => {
                 const pos = facePositions[faceName];
                 const wrapper = document.createElement('div');
                 wrapper.style.gridColumn = pos.col;
                 wrapper.style.gridRow = pos.row;
-                wrapper.style.display = 'flex';
-                wrapper.style.flexDirection = 'column';
-                wrapper.style.alignItems = 'center';
-                wrapper.style.justifyContent = 'center';
-                wrapper.style.padding = '2px';
-                
-                const label = document.createElement('div');
-                label.textContent = faceLabels[faceName];
-                label.style.fontSize = '12px';
-                label.style.fontWeight = 'bold';
-                label.style.marginBottom = '2px';
-                label.style.color = 'var(--text-primary)';
-                
+                wrapper.style.minWidth = '0';
+                wrapper.style.minHeight = '0';
+
                 const canvas = document.createElement('canvas');
                 canvas.width = 150;
                 canvas.height = 150;
+                canvas.style.display = 'block';
                 canvas.style.width = '100%';
-                canvas.style.maxWidth = '170px';
+                canvas.style.height = '100%';
                 canvas.style.borderRadius = '0';
                 canvas.style.border = '1px solid var(--border-color)';
-                
+
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // 使用已有方法绘制面
+
                 const savedCtx = this.canvasContextCache.get(faceName);
                 const savedCanvas = this.canvasCache.get(faceName);
-                
-                // 临时使用新Canvas进行绘制
                 this.canvasContextCache.set(faceName, ctx);
                 this.canvasCache.set(faceName, canvas);
-                
                 this.drawCornerCubeFace(ctx, model.faces[faceName], faceName);
-                
-                // 恢复原始缓存
+
                 if (savedCtx && savedCanvas) {
                     this.canvasContextCache.set(faceName, savedCtx);
                     this.canvasCache.set(faceName, savedCanvas);
@@ -2943,10 +2562,12 @@
                     this.canvasContextCache.delete(faceName);
                     this.canvasCache.delete(faceName);
                 }
-                
+
                 wrapper.appendChild(canvas);
-                container.appendChild(wrapper);
+                grid.appendChild(wrapper);
             });
+
+            container.appendChild(grid);
         }
     }
 
@@ -3151,15 +2772,17 @@
             let offsetX = 0, offsetY = 0;
             let needsFlip = false;
 
+            // 与另外两种八面体统一为 2-3-4-1 的横向顺序：
+            // 橙/黄、紫/绿、白/红、蓝/灰。
             switch(faceKey) {
-                case 'top1': offsetX = 30; offsetY = 400; needsFlip = true; break;
-                case 'top2': offsetX = 480; offsetY = 400; needsFlip = true; break;
-                case 'top3': offsetX = 930; offsetY = 400; needsFlip = true; break;
-                case 'top4': offsetX = 1380; offsetY = 400; needsFlip = true; break;
-                case 'bottom1': offsetX = 30; offsetY = 400; needsFlip = false; break;
-                case 'bottom2': offsetX = 480; offsetY = 400; needsFlip = false; break;
-                case 'bottom3': offsetX = 930; offsetY = 400; needsFlip = false; break;
-                case 'bottom4': offsetX = 1380; offsetY = 400; needsFlip = false; break;
+                case 'top2': offsetX = 30; offsetY = 400; needsFlip = true; break;
+                case 'top3': offsetX = 480; offsetY = 400; needsFlip = true; break;
+                case 'top4': offsetX = 930; offsetY = 400; needsFlip = true; break;
+                case 'top1': offsetX = 1380; offsetY = 400; needsFlip = true; break;
+                case 'bottom2': offsetX = 30; offsetY = 400; needsFlip = false; break;
+                case 'bottom3': offsetX = 480; offsetY = 400; needsFlip = false; break;
+                case 'bottom4': offsetX = 930; offsetY = 400; needsFlip = false; break;
+                case 'bottom1': offsetX = 1380; offsetY = 400; needsFlip = false; break;
             }
             
             let adjustedPoints = points.map(p => {
@@ -3626,11 +3249,6 @@
                 axes.appendChild(this.svgEl('line', {x1:0, y1:-s, x2:0, y2:s}));
                 g.appendChild(axes);
                 
-                // 添加面标签
-                const label = this.svgEl('text', {x:0, y:-s-5, 'text-anchor':'middle', fill:'#fff', 'font-size':'10', 'font-weight':'bold'});
-                label.textContent = key;
-                g.appendChild(label);
-                
                 faceGroup.appendChild(g);
             });
         }
@@ -3776,9 +3394,6 @@
                 paths.forEach(p => g.appendChild(p));
                 
                 g.appendChild(this.svgEl('circle', {cx:0, cy:0, r:r, fill:'none', stroke:'#555', 'stroke-width':0.75}));
-                const label = this.svgEl('text', {x:0, y:-s-5, 'text-anchor':'middle', fill:'#fff', 'font-size':'10', 'font-weight':'bold'});
-                label.textContent = key;
-                g.appendChild(label);
                 
                 faceGroup.appendChild(g);
             });
@@ -3886,6 +3501,979 @@
     // - 导出功能
     //
     // ============================================================
+
+    class Coordinate3DRenderer {
+        constructor(canvas = null) {
+            this.canvas = null;
+            this.ctx = null;
+            this.currentCubeType = null;
+            this.model = null;
+            this.faceTextureCache = {};
+            // 二阶魔轮的圆盘需要单独绘制，才能表现高于方形基座的厚度。
+            this.raisedTextureCache = {};
+            this.magicWheelExtrusion = 0.16;
+            // 用真实圆柱侧壁分片代替深色薄层堆叠。
+            this.magicWheelSideSegments = 64;
+            this.magicWheelSideAmbient = 0.78;
+            this.magicWheelSideDiffuse = 0.18;
+            // 设为 0 可完全关闭明暗处理；建议保持在 0~0.12。
+            this.faceShadowStrength = 0.10;
+            this.dragState = { active: false, x: 0, y: 0 };
+            // 统一采用右手坐标系：+Y 为上，+Z 为前，摄像机位于 +Z。
+            // 正的 pitch 才会在默认视角中看到顶面；原来的负值会使八面体显示底面。
+            this.rotation = { yaw: -Math.PI / 4, pitch: 0.55 };
+            this.cornerFaceRenderer = new CornerViewRenderer(null);
+            this.octahedronFaceKeys = ['top1', 'top2', 'top3', 'top4', 'bottom1', 'bottom2', 'bottom3', 'bottom4'];
+            this.setCanvas(canvas);
+        }
+
+        setCanvas(canvas) {
+            if (!canvas) return;
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d');
+            this.bindEvents();
+        }
+
+        bindEvents() {
+            if (!this.canvas || this.canvas.dataset.coordinate3dBound === 'true') return;
+
+            this.canvas.addEventListener('pointerdown', (event) => {
+                event.preventDefault();
+                this.dragState.active = true;
+                this.dragState.x = event.clientX;
+                this.dragState.y = event.clientY;
+                if (this.canvas.setPointerCapture) {
+                    this.canvas.setPointerCapture(event.pointerId);
+                }
+            });
+
+            this.canvas.addEventListener('pointermove', (event) => {
+                if (!this.dragState.active) return;
+                event.preventDefault();
+                const dx = event.clientX - this.dragState.x;
+                const dy = event.clientY - this.dragState.y;
+                this.dragState.x = event.clientX;
+                this.dragState.y = event.clientY;
+                const yawDelta = dx * 0.01;
+                const pitchDelta = dy * 0.01;
+                // 所有模型共用同一套世界坐标，不再按模型类型反转拖动方向。
+                this.rotation.yaw += yawDelta;
+                this.rotation.pitch = Math.max(-1.2, Math.min(1.2, this.rotation.pitch + pitchDelta));
+                this.render();
+            });
+
+            const stopDrag = () => {
+                this.dragState.active = false;
+            };
+
+            this.canvas.addEventListener('pointerup', stopDrag);
+            this.canvas.addEventListener('pointercancel', stopDrag);
+            this.canvas.addEventListener('pointerleave', stopDrag);
+            this.canvas.dataset.coordinate3dBound = 'true';
+        }
+
+        update(cubeType, model) {
+            const typeChanged = this.currentCubeType !== cubeType;
+            this.currentCubeType = cubeType;
+            if (typeChanged) {
+                this.resetViewForCubeType(cubeType);
+            }
+            this.model = model;
+            this.faceTextureCache = this.prepareTextures(cubeType, model);
+            this.prepareRaisedMagicWheelTextures(cubeType, model);
+            this.render();
+        }
+
+        resetViewForCubeType(cubeType = this.currentCubeType) {
+            if (cubeType === 'twinOctahedron') {
+                // 二阶转面八面体：从“左、下、前”三个方向等角观察。
+                // 初始可见面为：上方紫色 top3、中央绿色 bottom3、
+                // 左侧黄色 bottom2、右侧红色 bottom4。
+                this.rotation = {
+                    yaw: Math.PI / 4,
+                    pitch: -Math.asin(1 / Math.sqrt(3))
+                };
+            } else if (['octahedron', 'cornerOcta'].includes(cubeType)) {
+                // 另外两种八面体继续正对 F 顶点。
+                this.rotation = { yaw: 0, pitch: 0 };
+            } else {
+                // 立方体类仍使用可同时看到 U/F/R 的默认角度。
+                this.rotation = { yaw: -Math.PI / 4, pitch: 0.55 };
+            }
+        }
+
+        prepareTextures(cubeType, model) {
+            if (!model) return {};
+
+            if (cubeType === 'corner') {
+                return this.buildCubeTextureMap({
+                    U: this.createCornerFaceTexture(model.faces.top),
+                    D: this.createCornerFaceTexture(model.faces.bottom),
+                    F: this.createCornerFaceTexture(model.faces.front),
+                    B: this.createCornerFaceTexture(model.faces.back),
+                    L: this.createCornerFaceTexture(model.faces.left),
+                    R: this.createCornerFaceTexture(model.faces.right)
+                });
+            }
+
+            if (cubeType === 'squareCircle4') {
+                return this.buildCubeTextureMap(
+                    Object.fromEntries(
+                        Object.entries(model.faces).map(([key, colors]) => [key, this.createSquareCircle4FaceTexture(colors)])
+                    )
+                );
+            }
+
+            if (cubeType === 'squareCircle8') {
+                return this.buildCubeTextureMap(
+                    Object.fromEntries(
+                        Object.entries(model.faces).map(([key, colors]) => [key, this.createSquareCircle8FaceTexture(colors)])
+                    )
+                );
+            }
+
+            if (cubeType === 'octahedron') {
+                return Object.fromEntries(
+                    this.octahedronFaceKeys.map(key => [key, this.createOctahedronFaceTexture(key, model.faces[key])])
+                );
+            }
+
+            if (cubeType === 'cornerOcta') {
+                return Object.fromEntries(
+                    this.octahedronFaceKeys.map(key => [key, this.createCornerOctaFaceTexture(key, model.faces[key])])
+                );
+            }
+
+            if (cubeType === 'twinOctahedron') {
+                return Object.fromEntries(
+                    this.octahedronFaceKeys.map(key => [key, this.createTwinOctaFaceTexture(key, model.faces[key])])
+                );
+            }
+
+            return {};
+        }
+
+        prepareRaisedMagicWheelTextures(cubeType, model) {
+            this.raisedTextureCache = {};
+            if (!model || !['squareCircle4', 'squareCircle8'].includes(cubeType)) return;
+
+            const isFourPart = cubeType === 'squareCircle4';
+            const createTexture = (colors) => isFourPart
+                ? this.createSquareCircle4FaceTexture(colors, 256, true)
+                : this.createSquareCircle8FaceTexture(colors, 256, true);
+
+            const topTextures = Object.fromEntries(
+                Object.entries(model.faces).map(([key, colors]) => [key, createTexture(colors)])
+            );
+            this.raisedTextureCache = this.buildCubeTextureMap(topTextures);
+        }
+
+        render() {
+            if (!this.canvas || !this.ctx || !this.model || !this.currentCubeType) return;
+
+            this.resizeCanvas();
+            const ctx = this.ctx;
+            const width = this.canvas.width;
+            const height = this.canvas.height;
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.03)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.restore();
+
+            if (['corner', 'squareCircle4', 'squareCircle8'].includes(this.currentCubeType)) {
+                this.drawCubePreview(width, height);
+            } else {
+                this.drawOctahedronPreview(width, height);
+            }
+        }
+
+        resizeCanvas() {
+            if (!this.canvas || !this.ctx) return;
+            const rect = this.canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const width = Math.max(240, Math.round(rect.width * dpr));
+            const height = Math.max(240, Math.round(rect.height * dpr));
+            if (this.canvas.width !== width || this.canvas.height !== height) {
+                this.canvas.width = width;
+                this.canvas.height = height;
+            }
+            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+
+        drawCubePreview(width, height) {
+            const ctx = this.ctx;
+            const centerX = width / 2;
+            const centerY = height / 2 - Math.min(width, height) * 0.03;
+            const scale = Math.min(width, height) * 0.18;
+            const light = this.normalize({ x: 0.45, y: 0.75, z: 1.1 });
+            const isMagicWheel = this.currentCubeType === 'squareCircle4' || this.currentCubeType === 'squareCircle8';
+
+            const faces = [
+                { key: 'U', vertices: [{ x: -1, y: 1, z: -1 }, { x: 1, y: 1, z: -1 }, { x: 1, y: 1, z: 1 }, { x: -1, y: 1, z: 1 }] },
+                { key: 'D', vertices: [{ x: -1, y: -1, z: 1 }, { x: 1, y: -1, z: 1 }, { x: 1, y: -1, z: -1 }, { x: -1, y: -1, z: -1 }] },
+                { key: 'F', vertices: [{ x: -1, y: 1, z: 1 }, { x: 1, y: 1, z: 1 }, { x: 1, y: -1, z: 1 }, { x: -1, y: -1, z: 1 }] },
+                { key: 'B', vertices: [{ x: 1, y: 1, z: -1 }, { x: -1, y: 1, z: -1 }, { x: -1, y: -1, z: -1 }, { x: 1, y: -1, z: -1 }] },
+                { key: 'R', vertices: [{ x: 1, y: 1, z: 1 }, { x: 1, y: 1, z: -1 }, { x: 1, y: -1, z: -1 }, { x: 1, y: -1, z: 1 }] },
+                { key: 'L', vertices: [{ x: -1, y: 1, z: -1 }, { x: -1, y: 1, z: 1 }, { x: -1, y: -1, z: 1 }, { x: -1, y: -1, z: -1 }] }
+            ];
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.12)';
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY + scale * 1.55, scale * 2.1, scale * 0.42, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            const projectedFaces = faces.map(face => {
+                const rotated = face.vertices.map(vertex => this.rotatePoint(vertex));
+                // 贴图顶点顺序由各面的 2D 朝向决定，不保证三维绕序一致。
+                // 根据面中心自动把法线修正到朝外，避免显示背面。
+                const normal = this.getOutwardNormal(rotated);
+                const projected = rotated.map(point => this.projectPoint(point, scale, centerX, centerY));
+                return {
+                    key: face.key,
+                    normal,
+                    rotated,
+                    projected,
+                    depth: rotated.reduce((sum, point) => sum + point.z, 0) / rotated.length
+                };
+            }).filter(face => face.normal.z > 0.02)
+              .sort((a, b) => a.depth - b.depth);
+
+            projectedFaces.forEach(face => {
+                const texture = this.faceTextureCache[face.key];
+                if (texture) {
+                    const quad = this.getCubeTextureQuad(face.key, face.projected);
+                    this.drawAffineTexturedQuad(ctx, texture, quad[0], quad[1], quad[2], quad[3]);
+                }
+
+                // 原公式即使在最亮面也会覆盖约 20% 黑色，导致 3D 颜色明显偏暗。
+                // 现在只对背离光源的面施加 0~10% 的阴影，最亮面保持原始贴图颜色。
+                const diffuse = Math.max(0, Math.min(1, this.dot(face.normal, light)));
+                const overlay = (1 - diffuse) * this.faceShadowStrength;
+                ctx.save();
+                ctx.beginPath();
+                face.projected.forEach((point, index) => {
+                    if (index === 0) ctx.moveTo(point.x, point.y);
+                    else ctx.lineTo(point.x, point.y);
+                });
+                ctx.closePath();
+                ctx.fillStyle = `rgba(0, 0, 0, ${overlay.toFixed(3)})`;
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(15, 23, 42, 0.45)';
+                ctx.lineWidth = isMagicWheel
+                    ? Math.max(0.9, Math.min(width, height) * 0.0022)
+                    : Math.max(1.35, Math.min(width, height) * 0.0044);
+                ctx.stroke();
+                ctx.restore();
+
+                if (isMagicWheel) {
+                    this.drawRaisedMagicWheel(face, scale, light);
+                }
+            });
+        }
+
+        drawRaisedMagicWheel(face, scale, light) {
+            const topTexture = this.raisedTextureCache[face.key];
+            const faceColors = this.model?.faces?.[face.key];
+            if (!topTexture || !faceColors || !face.rotated) return;
+
+            const quad = this.getCubeTextureQuad(face.key, face.projected);
+            const depth = this.magicWheelExtrusion;
+            const dx = face.normal.x * scale * depth;
+            const dy = -face.normal.y * scale * depth;
+
+            // 圆盘在 256×256 贴图中的半径是 21.33/80。
+            const radiusUV = 21.33 / 80;
+            const mapUV = (u, v) => ({
+                x: quad[0].x + (quad[1].x - quad[0].x) * u + (quad[3].x - quad[0].x) * v,
+                y: quad[0].y + (quad[1].y - quad[0].y) * u + (quad[3].y - quad[0].y) * v
+            });
+            const circlePoint = (angle, raised = false) => {
+                const point = mapUV(
+                    0.5 + Math.cos(angle) * radiusUV,
+                    0.5 + Math.sin(angle) * radiusUV
+                );
+                return raised ? { x: point.x + dx, y: point.y + dy } : point;
+            };
+
+            // 贴图横向和纵向在旋转后的三维空间中的单位基向量。
+            const basisU = this.normalize(this.subtract(face.rotated[1], face.rotated[0]));
+            const basisV = this.normalize(this.subtract(face.rotated[3], face.rotated[0]));
+            const sideNormalAt = (angle) => this.normalize({
+                x: basisU.x * Math.cos(angle) + basisV.x * Math.sin(angle),
+                y: basisU.y * Math.cos(angle) + basisV.y * Math.sin(angle),
+                z: basisU.z * Math.cos(angle) + basisV.z * Math.sin(angle)
+            });
+
+            // 只绘制朝向摄像机的半圆周侧壁。每一片是真正的四边形侧面，
+            // 不再反复覆盖整张深色圆盘，因此不会产生发黑的抗锯齿叠层。
+            for (let i = 0; i < this.magicWheelSideSegments; i++) {
+                const a0 = i / this.magicWheelSideSegments * Math.PI * 2;
+                const a1 = (i + 1) / this.magicWheelSideSegments * Math.PI * 2;
+                const mid = (a0 + a1) / 2;
+                const sideNormal = sideNormalAt(mid);
+                if (sideNormal.z <= 0.001) continue;
+
+                const base0 = circlePoint(a0, false);
+                const base1 = circlePoint(a1, false);
+                const top1 = circlePoint(a1, true);
+                const top0 = circlePoint(a0, true);
+                const sectorIndex = this.getMagicWheelSectorIndex(mid);
+                const sourceColor = faceColors[sectorIndex] ?? faceColors[0];
+                const diffuse = Math.max(0, Math.min(1, this.dot(sideNormal, light)));
+                const factor = Math.min(1, this.magicWheelSideAmbient + this.magicWheelSideDiffuse * diffuse);
+
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.moveTo(base0.x, base0.y);
+                this.ctx.lineTo(base1.x, base1.y);
+                this.ctx.lineTo(top1.x, top1.y);
+                this.ctx.lineTo(top0.x, top0.y);
+                this.ctx.closePath();
+                const sideColor = this.shadeColor(sourceColor, factor);
+                this.ctx.fillStyle = sideColor;
+                this.ctx.strokeStyle = sideColor;
+                this.ctx.lineWidth = 0.8;
+                this.ctx.fill();
+                // 用同色描边封住分片之间的抗锯齿细缝，不会形成黑色圆周。
+                this.ctx.stroke();
+                this.ctx.restore();
+            }
+
+            // 只在真实扇区分界处画侧壁接缝，避免 64 个分片都出现黑线。
+            const sectorCount = this.currentCubeType === 'squareCircle4' ? 4 : 8;
+            for (let i = 0; i < sectorCount; i++) {
+                const angle = -Math.PI / 2 + i * Math.PI * 2 / sectorCount;
+                if (sideNormalAt(angle).z <= 0.001) continue;
+                const base = circlePoint(angle, false);
+                const top = circlePoint(angle, true);
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.moveTo(base.x, base.y);
+                this.ctx.lineTo(top.x, top.y);
+                this.ctx.strokeStyle = 'rgba(15, 23, 42, 0.28)';
+                this.ctx.lineWidth = Math.max(0.45, scale * 0.006);
+                this.ctx.stroke();
+                this.ctx.restore();
+            }
+
+            // 最后只绘制一次原色圆盘顶面。
+            const topQuad = quad.map(point => ({ x: point.x + dx, y: point.y + dy }));
+            this.drawAffineTexturedQuad(
+                this.ctx,
+                topTexture,
+                topQuad[0], topQuad[1], topQuad[2], topQuad[3]
+            );
+        }
+
+        getMagicWheelSectorIndex(angle) {
+            let normalized = angle;
+            while (normalized < -Math.PI / 2) normalized += Math.PI * 2;
+            while (normalized >= Math.PI * 3 / 2) normalized -= Math.PI * 2;
+
+            if (this.currentCubeType === 'squareCircle8') {
+                return Math.floor((normalized + Math.PI / 2) / (Math.PI / 4)) % 8;
+            }
+
+            // 四分轮的 2D 路径编号为：右下、右上、左上、左下。
+            const x = Math.cos(angle);
+            const y = Math.sin(angle);
+            if (x >= 0 && y >= 0) return 0;
+            if (x >= 0 && y < 0) return 1;
+            if (x < 0 && y < 0) return 2;
+            return 3;
+        }
+
+        shadeColor(color, factor) {
+            const hex = this.normalizeColor(color).replace('#', '');
+            const value = Number.parseInt(hex, 16);
+            if (!Number.isFinite(value)) return this.normalizeColor(color);
+            const clamp = channel => Math.max(0, Math.min(255, Math.round(channel * factor)));
+            const r = clamp((value >> 16) & 255);
+            const g = clamp((value >> 8) & 255);
+            const b = clamp(value & 255);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        drawOctahedronPreview(width, height) {
+            const ctx = this.ctx;
+            const centerX = width / 2;
+            const centerY = height / 2 - Math.min(width, height) * 0.02;
+            const scale = Math.min(width, height) * 0.26;
+            const light = this.normalize({ x: 0.45, y: 0.85, z: 1.15 });
+            const faceVertices = this.getOctahedronFaceVertices();
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.12)';
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY + scale * 1.2, scale * 1.45, scale * 0.28, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            const visibleFaces = Object.entries(faceVertices).map(([faceKey, vertices]) => {
+                const rotated = vertices.map(vertex => this.rotatePoint(vertex));
+                // 贴图顶点顺序由各面的 2D 朝向决定，不保证三维绕序一致。
+                // 根据面中心自动把法线修正到朝外，避免显示背面。
+                const normal = this.getOutwardNormal(rotated);
+                return {
+                    faceKey,
+                    normal,
+                    projected: rotated.map(point => this.projectPoint(point, scale, centerX, centerY)),
+                    depth: rotated.reduce((sum, point) => sum + point.z, 0) / rotated.length,
+                    texture: this.faceTextureCache[faceKey]
+                };
+            }).filter(face => face.normal.z > 0.01)
+              .sort((a, b) => a.depth - b.depth);
+
+            visibleFaces.forEach(face => {
+                if (!face.texture) return;
+                const uv = face.texture.uv;
+                this.drawTexturedTriangle(
+                    ctx,
+                    face.texture.canvas,
+                    uv[0].x, uv[0].y,
+                    uv[1].x, uv[1].y,
+                    uv[2].x, uv[2].y,
+                    face.projected[0].x, face.projected[0].y,
+                    face.projected[1].x, face.projected[1].y,
+                    face.projected[2].x, face.projected[2].y
+                );
+
+                const diffuse = Math.max(0, Math.min(1, this.dot(face.normal, light)));
+                const overlay = (1 - diffuse) * this.faceShadowStrength;
+                ctx.save();
+                ctx.beginPath();
+                face.projected.forEach((point, index) => {
+                    if (index === 0) ctx.moveTo(point.x, point.y);
+                    else ctx.lineTo(point.x, point.y);
+                });
+                ctx.closePath();
+                ctx.fillStyle = `rgba(0, 0, 0, ${overlay.toFixed(3)})`;
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(15, 23, 42, 0.42)';
+                ctx.lineWidth = Math.max(0.95, Math.min(width, height) * 0.003);
+                ctx.stroke();
+                ctx.restore();
+            });
+        }
+
+        getOctahedronFaceVertices() {
+            const v = {
+                T: { x: 0, y: 1.15, z: 0 },   // U 顶点
+                D: { x: 0, y: -1.15, z: 0 },  // D 顶点
+                R: { x: 1.05, y: 0, z: 0 },
+                F: { x: 0, y: 0, z: 1.05 },
+                L: { x: -1.05, y: 0, z: 0 },
+                B: { x: 0, y: 0, z: -1.05 }
+            };
+
+            // 数组顺序不是随意的：它表示贴图局部三角形的 [v0, v1, v2]。
+            // 三种八面体的 2D 编号方向不同，因此分别声明 UV -> 空间顶点映射。
+            if (this.currentCubeType === 'octahedron') {
+                // 双子八面体：局部 v2 是 U/D，v1 是 F/B，v0 是 R/L。
+                return {
+                    top4: [v.R, v.F, v.T],
+                    top1: [v.R, v.B, v.T],
+                    top2: [v.L, v.B, v.T],
+                    top3: [v.L, v.F, v.T],
+                    bottom4: [v.R, v.F, v.D],
+                    bottom1: [v.R, v.B, v.D],
+                    bottom2: [v.L, v.B, v.D],
+                    bottom3: [v.L, v.F, v.D]
+                };
+            }
+
+            if (['cornerOcta', 'twinOctahedron'].includes(this.currentCubeType)) {
+                // 转角八面体和二阶转面八面体的局部 v0/v1 方向都是交替的。
+                // 白(top4)、橙(top2)、绿(bottom3)、灰(bottom1)四个面
+                // 必须交换前两个 UV 顶点，否则其内部图案会左右镜像。
+                return {
+                    top4: [v.R, v.F, v.T],
+                    top1: [v.B, v.R, v.T],
+                    top2: [v.L, v.B, v.T],
+                    top3: [v.F, v.L, v.T],
+                    bottom4: [v.F, v.R, v.D],
+                    bottom1: [v.R, v.B, v.D],
+                    bottom2: [v.B, v.L, v.D],
+                    bottom3: [v.L, v.F, v.D]
+                };
+            }
+
+            return {};
+        }
+
+        createCornerFaceTexture(faceColors, size = 256) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, size, size);
+            ctx.save();
+            const ratio = size / 150;
+            ctx.scale(ratio, ratio);
+            this.cornerFaceRenderer.drawCornerCubeFace(ctx, faceColors, 'front');
+            ctx.restore();
+            return canvas;
+        }
+
+        createSquareCircle4FaceTexture(faceColors, size = 256, wheelOnly = false, darken = 0) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const s = 40;
+            const r = 21.33;
+            const scale = size / 80;
+            const pathDefs = [
+                'M 0,0 L 21.33,0 A 21.33,21.33 0 0,1 0 21.33 Z',
+                'M 0,0 L 0,-21.33 A 21.33,21.33 0 0,1 21.33 0 Z',
+                'M 0,0 L -21.33,0 A 21.33,21.33 0 0,1 0 -21.33 Z',
+                'M 0,0 L 0,21.33 A 21.33,21.33 0 0,1 -21.33 0 Z',
+                'M 0,-40 L 0,-21.33 A 21.33,21.33 0 0,1 21.33 0 L 40,0 L 40,-40 Z',
+                'M 40,0 L 21.33,0 A 21.33,21.33 0 0,1 0 21.33 L 0,40 L 40,40 Z',
+                'M 0,40 L 0,21.33 A 21.33,21.33 0 0,1 -21.33 0 L -40,0 L -40,40 Z',
+                'M -40,-40 L -40,0 L -21.33,0 A 21.33,21.33 0 0,1 0 -21.33 L 0,-40 Z'
+            ];
+
+            ctx.clearRect(0, 0, size, size);
+            ctx.save();
+            ctx.translate(size / 2, size / 2);
+            ctx.scale(scale, scale);
+            if (wheelOnly) {
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI * 2);
+                ctx.clip();
+            }
+            const visiblePaths = wheelOnly ? pathDefs.slice(0, 4) : pathDefs;
+            visiblePaths.forEach((path, index) => {
+                const piece = new Path2D(path);
+                ctx.fillStyle = this.normalizeColor(faceColors[index] || 0);
+                ctx.strokeStyle = 'rgba(51, 65, 85, 0.7)';
+                ctx.lineWidth = 0.55;
+                ctx.fill(piece);
+                ctx.stroke(piece);
+            });
+            ctx.strokeStyle = 'rgba(100, 116, 139, 0.75)';
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.arc(0, 0, r, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-s, 0);
+            ctx.lineTo(s, 0);
+            ctx.moveTo(0, -s);
+            ctx.lineTo(0, s);
+            ctx.stroke();
+            ctx.restore();
+
+            if (darken > 0) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'source-atop';
+                ctx.fillStyle = `rgba(0, 0, 0, ${darken})`;
+                ctx.fillRect(0, 0, size, size);
+                ctx.restore();
+            }
+            return canvas;
+        }
+
+        createSquareCircle8FaceTexture(faceColors, size = 256, wheelOnly = false, darken = 0) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const s = 40;
+            const r = 21.33;
+            const c = r / Math.sqrt(2);
+            const scale = size / 80;
+            const pathDefs = [
+                `M 0,0 L 0,${-r} A ${r},${r} 0 0,1 ${c} ${-c} Z`,
+                `M 0,0 L ${c},${-c} A ${r},${r} 0 0,1 ${r},0 Z`,
+                `M 0,0 L ${r},0 A ${r},${r} 0 0,1 ${c},${c} Z`,
+                `M 0,0 L ${c},${c} A ${r},${r} 0 0,1 0,${r} Z`,
+                `M 0,0 L 0,${r} A ${r},${r} 0 0,1 ${-c},${c} Z`,
+                `M 0,0 L ${-c},${c} A ${r},${r} 0 0,1 ${-r},0 Z`,
+                `M 0,0 L ${-r},0 A ${r},${r} 0 0,1 ${-c},${-c} Z`,
+                `M 0,0 L ${-c},${-c} A ${r},${r} 0 0,1 0,${-r} Z`,
+                `M 0,${-s} L 0,${-r} A ${r},${r} 0 0,1 ${r},0 L ${s},0 L ${s},${-s} Z`,
+                `M ${s},0 L ${r},0 A ${r},${r} 0 0,1 0,${r} L 0,${s} L ${s},${s} Z`,
+                `M 0,${s} L 0,${r} A ${r},${r} 0 0,1 ${-r},0 L ${-s},0 L ${-s},${s} Z`,
+                `M ${-s},${-s} L ${-s},0 L ${-r},0 A ${r},${r} 0 0,1 0,${-r} L 0,${-s} Z`
+            ];
+
+            ctx.clearRect(0, 0, size, size);
+            ctx.save();
+            ctx.translate(size / 2, size / 2);
+            ctx.scale(scale, scale);
+            if (wheelOnly) {
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI * 2);
+                ctx.clip();
+            }
+            const visiblePaths = wheelOnly ? pathDefs.slice(0, 8) : pathDefs;
+            visiblePaths.forEach((path, index) => {
+                const piece = new Path2D(path);
+                ctx.fillStyle = this.normalizeColor(faceColors[index] || 0);
+                ctx.strokeStyle = 'rgba(51, 65, 85, 0.7)';
+                ctx.lineWidth = 0.55;
+                ctx.fill(piece);
+                ctx.stroke(piece);
+            });
+            ctx.strokeStyle = 'rgba(100, 116, 139, 0.75)';
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.arc(0, 0, r, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-s, 0);
+            ctx.lineTo(s, 0);
+            ctx.moveTo(0, -s);
+            ctx.lineTo(0, s);
+            ctx.stroke();
+            ctx.restore();
+
+            if (darken > 0) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'source-atop';
+                ctx.fillStyle = `rgba(0, 0, 0, ${darken})`;
+                ctx.fillRect(0, 0, size, size);
+                ctx.restore();
+            }
+            return canvas;
+        }
+
+        buildCubeTextureMap(textures) {
+            if (!textures) return {};
+            // 数据面与几何面必须一一对应。旧代码在这里交换了 L/R，
+            // 会直接造成左右两个面的颜色和状态互换。
+            return {
+                U: textures.U,
+                D: textures.D,
+                F: textures.F,
+                B: textures.B,
+                L: textures.L,
+                R: textures.R
+            };
+        }
+
+        getCubeTextureQuad(faceKey, projected) {
+            // drawCubePreview 中每个面的顶点本来就是
+            // [左上, 右上, 右下, 左下]，无需再将 U/F/D/B 旋转 180°。
+            return projected;
+        }
+
+        createOctahedronFaceTexture(faceKey, faceColors, size = 260) {
+            const isTopFace = faceKey.startsWith('top');
+            const needsMirror = faceKey === 'top1' || faceKey === 'top3' || faceKey === 'bottom1' || faceKey === 'bottom3';
+            const a = 1.5 * RENDER_CONFIG.SVG_SCALE_TWIN;
+            const projectionFactor = RENDER_CONFIG.PROJECTION_FACTOR;
+            const points3D = [
+                [a, 0, 0], [0, a, 0], [0, 0, a],
+                [7/9*a, 2/9*a, 0], [2/9*a, 7/9*a, 0],
+                [0, 7/9*a, 2/9*a], [0, 2/9*a, 7/9*a],
+                [2/9*a, 0, 7/9*a], [7/9*a, 0, 2/9*a],
+                [5/9*a, 2/9*a, 2/9*a],
+                [2/9*a, 5/9*a, 2/9*a],
+                [2/9*a, 2/9*a, 5/9*a]
+            ];
+            const quads = [
+                [0, 3, 9, 8], [3, 4, 10, 9], [1, 4, 10, 5],
+                [5, 6, 11, 10], [2, 7, 11, 6], [7, 8, 9, 11]
+            ];
+            const centerTriangle = [9, 10, 11];
+
+            const projectedPoints = points3D.map((p) => {
+                let x;
+                let y;
+                if (isTopFace) {
+                    x = (p[0] - p[1]) * projectionFactor;
+                    y = (p[0] + p[1] - p[2] * 0.5) * projectionFactor;
+                } else {
+                    x = (p[0] - p[1]) * projectionFactor;
+                    y = (-p[0] - p[1] + p[2] * 0.5) * projectionFactor;
+                }
+                if (needsMirror) x = -x;
+                return { x, y };
+            });
+
+            const polygons = quads.map((quad, index) => ({
+                points: quad.map(i => projectedPoints[i]),
+                color: faceColors[index] || 0
+            }));
+            polygons.push({
+                points: centerTriangle.map(i => projectedPoints[i]),
+                color: faceColors[6] || 0
+            });
+
+            return this.buildTriangleTexture(
+                [projectedPoints[0], projectedPoints[1], projectedPoints[2]],
+                polygons,
+                size,
+                { strokeStyle: 'rgba(15, 23, 42, 0.68)', lineWidth: 1.05 }
+            );
+        }
+
+        createCornerOctaFaceTexture(faceKey, faceColors, size = 260) {
+            const scale = RENDER_CONFIG.SVG_SCALE_CORNER;
+            const a = scale;
+            const basePoints = [
+                [0, 0], [a, 0], [2*a, 0], [3*a, 0],
+                [0.5*a, Math.sqrt(3)/2*a], [1.5*a, Math.sqrt(3)/2*a], [2.5*a, Math.sqrt(3)/2*a],
+                [a, Math.sqrt(3)*a], [2*a, Math.sqrt(3)*a], [1.5*a, 3*Math.sqrt(3)/2*a]
+            ];
+            const triangles = [
+                [0, 1, 4], [1, 2, 5], [2, 3, 6], [1, 4, 5],
+                [2, 5, 6], [4, 5, 7], [5, 6, 8], [5, 7, 8], [7, 8, 9]
+            ];
+            const needsFlip = faceKey.startsWith('top');
+
+            const points = basePoints.map(([x0, y0]) => {
+                let x = x0;
+                let y = y0;
+                if (needsFlip) {
+                    y = -y;
+                    x = 3*a - x;
+                }
+                return { x, y };
+            });
+
+            const polygons = triangles.map((triangle, index) => ({
+                points: triangle.map(i => points[i]),
+                color: faceColors[index] || 0
+            }));
+
+            return this.buildTriangleTexture(
+                [points[0], points[3], points[9]],
+                polygons,
+                size,
+                { strokeStyle: 'rgba(15, 23, 42, 0.68)', lineWidth: 1.0 }
+            );
+        }
+
+        createTwinOctaFaceTexture(faceKey, faceColors, size = 260) {
+            const a = RENDER_CONFIG.SVG_SCALE_TWIN_OCTA;
+            const basePoints = [
+                [0, 0],
+                [2*a, 0],
+                [a, Math.sqrt(3)*a],
+                [a, 0],
+                [a/2, Math.sqrt(3)/2*a],
+                [3*a/2, Math.sqrt(3)/2*a]
+            ];
+            const triangles = [
+                [0, 3, 4],
+                [1, 5, 3],
+                [2, 4, 5],
+                [3, 5, 4]
+            ];
+            const needsFlip = faceKey === 'top1' || faceKey === 'top2' || faceKey === 'top3' || faceKey === 'top4';
+
+            const points = basePoints.map(([x0, y0]) => {
+                let x = x0;
+                let y = y0;
+                if (needsFlip) {
+                    y = -y;
+                    x = 2*a - x;
+                }
+                return { x, y };
+            });
+
+            const polygons = triangles.map((triangle, index) => ({
+                points: triangle.map(i => points[i]),
+                color: faceColors[index] || 0
+            }));
+
+            return this.buildTriangleTexture(
+                [points[0], points[1], points[2]],
+                polygons,
+                size,
+                { strokeStyle: 'rgba(15, 23, 42, 0.68)', lineWidth: 1.0 }
+            );
+        }
+
+        buildTriangleTexture(trianglePoints, polygons, size = 260, options = {}) {
+            const margin = options.margin || size * 0.1;
+            const allPoints = [...trianglePoints, ...polygons.flatMap(item => item.points)];
+            const xs = allPoints.map(point => point.x);
+            const ys = allPoints.map(point => point.y);
+            const minX = Math.min(...xs);
+            const maxX = Math.max(...xs);
+            const minY = Math.min(...ys);
+            const maxY = Math.max(...ys);
+            const drawableWidth = Math.max(1, maxX - minX);
+            const drawableHeight = Math.max(1, maxY - minY);
+            const scale = Math.min((size - margin * 2) / drawableWidth, (size - margin * 2) / drawableHeight);
+
+            const transformPoint = (point) => ({
+                x: (point.x - minX) * scale + margin,
+                y: (point.y - minY) * scale + margin
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, size, size);
+
+            polygons.forEach(item => {
+                const transformed = item.points.map(transformPoint);
+                ctx.beginPath();
+                transformed.forEach((point, index) => {
+                    if (index === 0) ctx.moveTo(point.x, point.y);
+                    else ctx.lineTo(point.x, point.y);
+                });
+                ctx.closePath();
+                ctx.fillStyle = this.normalizeColor(item.color);
+                ctx.fill();
+                ctx.strokeStyle = options.strokeStyle || 'rgba(15, 23, 42, 0.7)';
+                ctx.lineWidth = options.lineWidth || 1;
+                ctx.stroke();
+            });
+
+            return {
+                canvas,
+                uv: trianglePoints.map(transformPoint)
+            };
+        }
+
+        drawAffineTexturedQuad(ctx, image, p0, p1, p2, p3) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            ctx.lineTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.closePath();
+            ctx.clip();
+
+            const width = image.width;
+            const height = image.height;
+            const vxX = (p1.x - p0.x) / width;
+            const vxY = (p1.y - p0.y) / width;
+            const vyX = (p3.x - p0.x) / height;
+            const vyY = (p3.y - p0.y) / height;
+            ctx.transform(vxX, vxY, vyX, vyY, p0.x, p0.y);
+            ctx.drawImage(image, 0, 0);
+            ctx.restore();
+        }
+
+        drawTexturedQuad(ctx, image, p0, p1, p2, p3) {
+            this.drawTexturedTriangle(ctx, image,
+                0, 0,
+                image.width, 0,
+                image.width, image.height,
+                p0.x, p0.y,
+                p1.x, p1.y,
+                p2.x, p2.y
+            );
+            this.drawTexturedTriangle(ctx, image,
+                0, 0,
+                image.width, image.height,
+                0, image.height,
+                p0.x, p0.y,
+                p2.x, p2.y,
+                p3.x, p3.y
+            );
+        }
+
+        drawTexturedTriangle(ctx, image, sx0, sy0, sx1, sy1, sx2, sy2, dx0, dy0, dx1, dy1, dx2, dy2) {
+            const denominator = sx0 * (sy1 - sy2) + sx1 * (sy2 - sy0) + sx2 * (sy0 - sy1);
+            if (denominator === 0) return;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(dx0, dy0);
+            ctx.lineTo(dx1, dy1);
+            ctx.lineTo(dx2, dy2);
+            ctx.closePath();
+            ctx.clip();
+
+            const m11 = (dx0 * (sy1 - sy2) + dx1 * (sy2 - sy0) + dx2 * (sy0 - sy1)) / denominator;
+            const m12 = (dy0 * (sy1 - sy2) + dy1 * (sy2 - sy0) + dy2 * (sy0 - sy1)) / denominator;
+            const m21 = (dx0 * (sx2 - sx1) + dx1 * (sx0 - sx2) + dx2 * (sx1 - sx0)) / denominator;
+            const m22 = (dy0 * (sx2 - sx1) + dy1 * (sx0 - sx2) + dy2 * (sx1 - sx0)) / denominator;
+            const m31 = (dx0 * (sx1 * sy2 - sx2 * sy1) + dx1 * (sx2 * sy0 - sx0 * sy2) + dx2 * (sx0 * sy1 - sx1 * sy0)) / denominator;
+            const m32 = (dy0 * (sx1 * sy2 - sx2 * sy1) + dy1 * (sx2 * sy0 - sx0 * sy2) + dy2 * (sx0 * sy1 - sx1 * sy0)) / denominator;
+
+            ctx.transform(m11, m12, m21, m22, m31, m32);
+            ctx.drawImage(image, 0, 0);
+            ctx.restore();
+        }
+
+        normalizeColor(color) {
+            if (typeof color === 'number') {
+                return '#' + color.toString(16).padStart(6, '0');
+            }
+            if (typeof color === 'string') {
+                if (color.startsWith('#')) return color;
+                return CORNER_CUBE_COLOR_MAP[color] || color;
+            }
+            return '#94a3b8';
+        }
+
+        getOutwardNormal(vertices) {
+            let normal = this.normalize(this.cross(
+                this.subtract(vertices[1], vertices[0]),
+                this.subtract(vertices[2], vertices[0])
+            ));
+            const center = vertices.reduce((sum, point) => ({
+                x: sum.x + point.x,
+                y: sum.y + point.y,
+                z: sum.z + point.z
+            }), { x: 0, y: 0, z: 0 });
+
+            // 模型都以原点为中心；若法线指向面中心的反方向，则将其翻转。
+            if (this.dot(normal, center) < 0) {
+                normal = { x: -normal.x, y: -normal.y, z: -normal.z };
+            }
+            return normal;
+        }
+
+        subtract(a, b) {
+            return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
+        }
+
+        cross(a, b) {
+            return {
+                x: a.y * b.z - a.z * b.y,
+                y: a.z * b.x - a.x * b.z,
+                z: a.x * b.y - a.y * b.x
+            };
+        }
+
+        dot(a, b) {
+            return a.x * b.x + a.y * b.y + a.z * b.z;
+        }
+
+        normalize(vector) {
+            const length = Math.hypot(vector.x, vector.y, vector.z) || 1;
+            return { x: vector.x / length, y: vector.y / length, z: vector.z / length };
+        }
+
+        rotatePoint(point) {
+            const cosY = Math.cos(this.rotation.yaw);
+            const sinY = Math.sin(this.rotation.yaw);
+            const x1 = point.x * cosY + point.z * sinY;
+            const z1 = -point.x * sinY + point.z * cosY;
+
+            const cosX = Math.cos(this.rotation.pitch);
+            const sinX = Math.sin(this.rotation.pitch);
+            const y2 = point.y * cosX - z1 * sinX;
+            const z2 = point.y * sinX + z1 * cosX;
+
+            return { x: x1, y: y2, z: z2 };
+        }
+
+        projectPoint(point, scale, centerX, centerY) {
+            return {
+                x: centerX + point.x * scale,
+                y: centerY - point.y * scale,
+                z: point.z
+            };
+        }
+    }
 
     // ===== 魔方计时器应用主控制器 =====
     class CubeTimerApp {
@@ -5703,12 +6291,11 @@
 
             if (timerSection) {
                 if (window.innerWidth <= 768) {
+                    // 手机端打乱区和计时区都处于正常文档流，打乱区已经占据了自身高度，
+                    // 不能再次把它的高度作为计时区顶部 padding，否则会产生一整块重复空白。
                     timerSection.style.top = '';
                     timerSection.style.height = '';
-                    if (scrambleControlsSection) {
-                        const mobileOffset = scrambleControlsSection.offsetHeight + 32;
-                        timerSection.style.setProperty('--mobile-scramble-offset', `${mobileOffset}px`);
-                    }
+                    timerSection.style.removeProperty('--mobile-scramble-offset');
                     return;
                 }
 
@@ -5738,11 +6325,9 @@
         showCoordinateModal() {
             const modal = document.getElementById('coordinateModal');
             if (modal) {
-                // 根据当前魔方类型生成对应的图片内容
-                this.updateCoordinateModalContent();
-                
-                // 确保模态框显示
+                // 先显示模态框，确保2D/3D容器拥有正确尺寸后再渲染
                 modal.style.display = 'flex';
+                requestAnimationFrame(() => this.updateCoordinateModalContent());
                 
                 // 定义关闭函数
                 const closeModal = () => {
@@ -5832,10 +6417,15 @@
             if (buttonsContainer) {
                 buttonsContainer.innerHTML = '';
                 const moves = this.getMoveButtonsForCubeType(currentCubeType);
+                const firstLowercaseIndex = moves.findIndex(move => /^[a-z]/.test(move));
                 
-                moves.forEach(move => {
+                moves.forEach((move, index) => {
                     const btn = document.createElement('button');
                     btn.className = 'coordinate-move-btn';
+                    // 在响应式网格列数不能整除 6 时，也强制小写组另起一行。
+                    if (index === firstLowercaseIndex) {
+                        btn.classList.add('coordinate-move-btn-group-start');
+                    }
                     btn.textContent = move;
                     btn.addEventListener('click', () => {
                         this.handleMoveButtonClick(move, currentCubeType);
@@ -5852,9 +6442,23 @@
                     this.resetCoordinateCube();
                 };
             }
+
+            // 初始化3D渲染器
+            const coordinate3dCanvas = document.getElementById('coordinate3dCanvas');
+            if (coordinate3dCanvas) {
+                if (!this.coordinate3DRenderer) {
+                    this.coordinate3DRenderer = new Coordinate3DRenderer(coordinate3dCanvas);
+                } else {
+                    this.coordinate3DRenderer.setCanvas(coordinate3dCanvas);
+                }
+                // 每次打开“转动方式”都恢复该魔方类型的标准观察方向。
+                this.coordinate3DRenderer.resetViewForCubeType(currentCubeType);
+            }
             
-            // 渲染初始已还原状态
-            this.renderCoordinateView(currentCubeType, this.coordinateCube);
+            // 渲染初始已还原状态（延迟到下一帧，确保容器尺寸正确）
+            requestAnimationFrame(() => {
+                this.renderCoordinateView(currentCubeType, this.coordinateCube);
+            });
         }
         
         getMoveButtonsForCubeType(cubeType) {
@@ -5866,17 +6470,17 @@
                 ],
                 octahedron: ['U', 'R', 'F', 'D', 'B', 'L'],
                 cornerOcta: [
-                    'U', 'u', 'F', 'f', 'R', 'r',
-                    'D', 'd', 'B', 'b', 'L', 'l'
+                    'U', 'R', 'F', 'D', 'B', 'L',
+                    'u', 'r', 'f', 'd', 'b', 'l'
                 ],
-                twinOctahedron: ['RU', 'RD', 'LU', 'LD'],
+                twinOctahedron: ['R', 'U', 'F', 'L'],
                 squareCircle4: [
-                    'U', 'u', 'F', 'f', 'R', 'r',
-                    'D', 'd', 'B', 'b', 'L', 'l'
+                    'U', 'R', 'F', 'D', 'B', 'L',
+                    'u', 'r', 'f', 'd', 'b', 'l'
                 ],
                 squareCircle8: [
-                    'U', 'D', 'F', 'B', 'R', 'L',
-                    'u', 'd', 'f', 'b', 'r', 'l'
+                    'U', 'R', 'F', 'D', 'B', 'L',
+                    'u', 'r', 'f', 'd', 'b', 'l'
                 ]
             };
             return moveSets[cubeType] || [];
@@ -5906,52 +6510,54 @@
             
             const svgContainer = document.getElementById('coordinateSvgContainer');
             if (!svgContainer) return;
+
+            const cube = model || new cubeInfo.model();
+            if (!cube) return;
             
             // 转角三阶使用Canvas - 特殊处理
             if (cubeType === 'corner') {
                 svgContainer.style.display = 'block';
                 svgContainer.innerHTML = '';
-                const cube = model || new cubeInfo.model();
-                if (!cube) return;
                 const svgConfig = this.getCoordinateSVGConfig(cubeType);
                 const renderer = new cubeInfo.viewRenderer(null);
                 renderer.renderToCoordinateSVG(svgContainer, cube, svgConfig);
-                return;
+            } else {
+                // 对于其他魔方类型，克隆计时器界面的SVG
+                // 确保布局（变换、viewBox、面位置）完全一致
+                const timerSvgContainers = {
+                    octahedron: 'twod-container',
+                    cornerOcta: 'cornerOcta-twod-container',
+                    twinOctahedron: 'twinOctahedron-twod-container',
+                    squareCircle4: 'squareCircle4-twod-container',
+                    squareCircle8: 'squareCircle8-twod-container'
+                };
+                
+                const timerContainerId = timerSvgContainers[cubeType];
+                if (!timerContainerId) return;
+                
+                const timerContainer = document.getElementById(timerContainerId);
+                if (!timerContainer) return;
+                
+                // 清空并克隆SVG结构
+                svgContainer.style.display = 'block';
+                svgContainer.innerHTML = '';
+                
+                const clonedContainer = timerContainer.cloneNode(true);
+                clonedContainer.id = 'coordinate-cloned-' + cubeType;
+                clonedContainer.style.position = 'relative';
+                clonedContainer.style.width = '100%';
+                clonedContainer.style.height = '100%';
+                svgContainer.appendChild(clonedContainer);
+                
+                // 使用渲染器渲染 - 会使用克隆的face-group
+                const renderer = new cubeInfo.viewRenderer(null);
+                renderer.renderToCoordinateSVG(svgContainer, cube, this.getCoordinateSVGConfig(cubeType));
             }
-            
-            // 对于其他魔方类型，克隆计时器界面的SVG
-            // 确保布局（变换、viewBox、面位置）完全一致
-            const timerSvgContainers = {
-                octahedron: 'twod-container',
-                cornerOcta: 'cornerOcta-twod-container',
-                twinOctahedron: 'twinOctahedron-twod-container',
-                squareCircle4: 'squareCircle4-twod-container',
-                squareCircle8: 'squareCircle8-twod-container'
-            };
-            
-            const timerContainerId = timerSvgContainers[cubeType];
-            if (!timerContainerId) return;
-            
-            const timerContainer = document.getElementById(timerContainerId);
-            if (!timerContainer) return;
-            
-            // 清空并克隆SVG结构
-            svgContainer.style.display = 'block';
-            svgContainer.innerHTML = '';
-            
-            const clonedContainer = timerContainer.cloneNode(true);
-            clonedContainer.id = 'coordinate-cloned-' + cubeType;
-            clonedContainer.style.position = 'relative';
-            clonedContainer.style.width = '100%';
-            clonedContainer.style.height = '100%';
-            svgContainer.appendChild(clonedContainer);
-            
-            // 使用渲染器渲染 - 会使用克隆的face-group
-            const cube = model || new cubeInfo.model();
-            if (!cube) return;
-            
-            const renderer = new cubeInfo.viewRenderer(null);
-            renderer.renderToCoordinateSVG(svgContainer, cube, this.getCoordinateSVGConfig(cubeType));
+
+            // 同步渲染3D视图
+            if (this.coordinate3DRenderer) {
+                this.coordinate3DRenderer.update(cubeType, cube);
+            }
         }
         
         getCoordinateSVGConfig(cubeType) {
@@ -6005,33 +6611,8 @@
                 for (const move of convertedScramble) {
                     model.rotate(move);
                 }
-            } else if (this.state.currentCubeType === 'twinOctahedron') {
-                // 二阶转面八面体：将显示符号映射回实际操作
-                // R->RU, F->RD, U->LU, L->LD
-                const displayToMoveMap = {
-                    'R': 'RU', "R'": "RU'",
-                    'F': 'RD', "F'": "RD'",
-                    'U': 'LU', "U'": "LU'",
-                    'L': 'LD', "L'": "LD'",
-                    'R2': 'RU', "R2'": "RU'",
-                    'F2': 'RD', "F2'": "RD'",
-                    'U2': 'LU', "U2'": "LU'",
-                    'L2': 'LD', "L2'": "LD'"
-                };
-
-                const moves = typeof this.state.currentScramble === 'string'
-                    ? this.state.currentScramble.split(' ')
-                    : this.state.currentScramble;
-
-                for (const displayMove of moves) {
-                    if (!displayMove) continue;
-                    const actualMove = displayToMoveMap[displayMove];
-                    if (actualMove) {
-                        model.rotate(actualMove);
-                    }
-                }
             } else {
-                // 其他魔方类型直接应用
+                // 其他魔方类型（包括二阶转面八面体）直接应用标准记号
                 const moves = typeof this.state.currentScramble === 'string'
                     ? this.state.currentScramble.split(' ')
                     : this.state.currentScramble;
@@ -6358,43 +6939,45 @@
             let offsetX = 0, offsetY = 0;
             let needsFlip = false;
             
+            // 与 OctahedronViewRenderer 和 TwinOctahedronViewRenderer 保持一致：
+            // 第 1～4 列依次显示 2、3、4、1 号面。
             switch(faceKey) {
-                case 'top1': // 蓝色
-                    offsetX = 30;
-                    offsetY = 400;
-                    needsFlip = true;
-                    break;
                 case 'top2': // 橙色
-                    offsetX = 480;
+                    offsetX = 30;
                     offsetY = 400;
                     needsFlip = true;
                     break;
                 case 'top3': // 紫色
-                    offsetX = 930;
+                    offsetX = 480;
                     offsetY = 400;
                     needsFlip = true;
                     break;
                 case 'top4': // 白色
+                    offsetX = 930;
+                    offsetY = 400;
+                    needsFlip = true;
+                    break;
+                case 'top1': // 蓝色
                     offsetX = 1380;
                     offsetY = 400;
                     needsFlip = true;
                     break;
-                case 'bottom1': // 灰色
+                case 'bottom2': // 黄色
                     offsetX = 30;
                     offsetY = 400;
                     needsFlip = false;
                     break;
-                case 'bottom2': // 黄色
+                case 'bottom3': // 绿色
                     offsetX = 480;
                     offsetY = 400;
                     needsFlip = false;
                     break;
-                case 'bottom3': // 绿色
+                case 'bottom4': // 红色
                     offsetX = 930;
                     offsetY = 400;
                     needsFlip = false;
                     break;
-                case 'bottom4': // 红色
+                case 'bottom1': // 灰色
                     offsetX = 1380;
                     offsetY = 400;
                     needsFlip = false;

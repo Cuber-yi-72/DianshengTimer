@@ -2346,22 +2346,57 @@
         }
 
         .coordinate-view-container {
-            flex: 0 0 75%;
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+            min-height: 420px;
+        }
+
+        .coordinate-preview-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 18px;
+        }
+
+        .coordinate-preview-card {
+            min-width: 0;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+
+        .coordinate-panel-title {
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .coordinate-svg-container,
+        .coordinate-3d-container {
+            width: 100%;
+            height: 100%;
+            min-height: 320px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg-color);
+            position: relative;
+            background: rgba(0, 0, 0, 0.08);
             border-radius: 12px;
-            padding: 20px;
-            min-height: 400px;
+            overflow: hidden;
         }
 
         .coordinate-svg-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 8px;
         }
 
         .coordinate-svg-container svg {
@@ -2372,8 +2407,20 @@
             object-fit: contain;
         }
 
+        .coordinate-3d-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .coordinate-3d-canvas:active {
+            cursor: grabbing;
+        }
+
         .coordinate-buttons-container {
-            flex: 0 0 22%;
+            flex: 0 0 220px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -2441,6 +2488,56 @@
             transform: scale(0.95);
         }
 
+        @media (max-width: 1024px) {
+            .coordinate-content {
+                width: 94vw;
+                height: 92vh;
+            }
+
+            .coordinate-body {
+                flex-direction: column;
+            }
+
+            .coordinate-preview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .coordinate-buttons-container {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+
+            .coordinate-move-buttons {
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .coordinate-header {
+                padding: 16px 18px;
+            }
+
+            .coordinate-header h3 {
+                font-size: 18px;
+            }
+
+            .coordinate-body {
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .coordinate-preview-card {
+                padding: 12px;
+            }
+
+            .coordinate-svg-container,
+            .coordinate-3d-container {
+                min-height: 240px;
+            }
+
+        }
+
         .coordinate-image-container {
             width: 100%;
             height: 100%;
@@ -2506,3 +2603,185 @@
             color: var(--text-muted);
             font-size: 14px;
         }
+
+/* ===== 转动方式弹窗：移动端防重叠与 2D 居中修正 ===== */
+.coordinate-corner-net {
+    margin: auto;
+}
+
+@media (max-width: 768px) {
+    .coordinate-modal {
+        align-items: stretch;
+        justify-content: stretch;
+    }
+
+    .coordinate-content {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        max-width: none;
+        max-height: none;
+        border-radius: 0;
+    }
+
+    .coordinate-header {
+        flex: 0 0 auto;
+        padding: 14px 16px;
+    }
+
+    .coordinate-header h3 {
+        min-width: 0;
+        font-size: 17px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .coordinate-body {
+        min-height: 0;
+        padding: 12px;
+        gap: 14px;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .coordinate-view-container {
+        display: block;
+        flex: 0 0 auto;
+        width: 100%;
+        height: auto;
+        min-height: 0;
+    }
+
+    .coordinate-preview-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-auto-rows: auto;
+        width: 100%;
+        height: auto;
+        gap: 12px;
+    }
+
+    .coordinate-preview-card {
+        width: 100%;
+        min-width: 0;
+        min-height: 0;
+        padding: 12px;
+        gap: 8px;
+        flex: none;
+    }
+
+    .coordinate-svg-container,
+    .coordinate-3d-container {
+        flex: 0 0 auto;
+        width: 100%;
+        height: clamp(220px, 62vw, 300px);
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .coordinate-buttons-container {
+        flex: 0 0 auto;
+        width: 100%;
+        min-width: 0;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    .coordinate-move-buttons {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        gap: 7px;
+    }
+
+    .coordinate-move-btn {
+        min-width: 0;
+        min-height: 38px;
+        padding: 7px 3px;
+        font-size: 12px;
+    }
+
+    .coordinate-reset-btn {
+        min-height: 42px;
+    }
+}
+
+@media (max-width: 380px) {
+    .coordinate-body {
+        padding: 10px;
+    }
+
+    .coordinate-preview-card {
+        padding: 10px;
+    }
+
+    .coordinate-svg-container,
+    .coordinate-3d-container {
+        height: 220px;
+    }
+
+    .coordinate-move-buttons {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* ===== 手机端主界面：移除打乱区高度的重复占位 ===== */
+@media (max-width: 768px) {
+    .timer-main-section {
+        /* 打乱区在手机端已经位于正常文档流中，不再在计时区内重复预留高度。 */
+        --mobile-scramble-offset: 0px;
+        height: auto;
+        min-height: 440px;
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .timer-display {
+        /* 覆盖桌面端 flex: 7，避免计时数字上方被分配大量空白。 */
+        flex: 0 0 160px;
+        flex-basis: clamp(130px, 20vh, 180px);
+        min-width: 0;
+        min-height: 0;
+        padding: 8px;
+    }
+
+    .timer-number {
+        font-size: clamp(44px, 13vw, 56px);
+    }
+
+    .cube-2d-view {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 250px;
+        padding: 8px;
+        overflow: hidden;
+    }
+}
+
+@media (max-width: 380px), (max-height: 700px) {
+    .timer-main-section {
+        min-height: 400px;
+    }
+
+    .timer-display {
+        flex-basis: 120px;
+    }
+
+    .cube-2d-view {
+        min-height: 230px;
+    }
+}
+
+/* 大写操作与小写操作分组：小写组始终从新的一行开始。 */
+.coordinate-move-btn-group-start {
+    grid-column-start: 1;
+}

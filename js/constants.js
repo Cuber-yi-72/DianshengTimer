@@ -108,7 +108,7 @@ const AUDIO_CONFIG = {
 
 // ===== 应用配置常量 =====
 const APP_CONFIG = {
-    APP_VERSION: '1.1.1',
+    APP_VERSION: '1.2.0',
     DEBUG: false,
     INSPECTION_TIME: 15,
     INSPECTION_TIMEOUT_DNF: 17,

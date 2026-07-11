@@ -1,0 +1,15 @@
+{
+  "name": "diansheng-cube-timer",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "hooks:install": "git config core.hooksPath .githooks",
+    "version:check": "node scripts/version.mjs check",
+    "version:sync": "node scripts/version.mjs sync",
+    "version:patch": "node scripts/version.mjs bump patch",
+    "version:minor": "node scripts/version.mjs bump minor",
+    "version:major": "node scripts/version.mjs bump major",
+    "version:set": "node scripts/version.mjs set"
+  }
+}
