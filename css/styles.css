@@ -2785,3 +2785,55 @@
 .coordinate-move-btn-group-start {
     grid-column-start: 1;
 }
+
+/* ===== 八面体打乱视图切换 ===== */
+.octa-view-toggle-btn {
+    display: none;
+    width: auto;
+    min-width: 0;
+    height: 32px;
+    padding: 0 1rem;
+    margin-left: 8px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: 0.625rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-primary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.scramble-display-section.has-octa-view-toggle .octa-view-toggle-btn {
+    display: flex;
+}
+
+.octa-view-toggle-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-glow);
+}
+
+.octa-view-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+    .scramble-display-section.has-octa-view-toggle {
+        min-height: 126px;
+        padding-right: 108px;
+    }
+
+    .octa-view-toggle-btn {
+        position: absolute;
+        top: 86px;
+        right: 10px;
+        height: 32px;
+        margin-left: 0;
+        padding: 0 10px;
+        font-size: 11px;
+    }
+}

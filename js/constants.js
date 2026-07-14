@@ -108,7 +108,7 @@ const AUDIO_CONFIG = {
 
 // ===== 应用配置常量 =====
 const APP_CONFIG = {
-    APP_VERSION: '1.2.0',
+    APP_VERSION: '1.2.1',
     DEBUG: false,
     INSPECTION_TIME: 15,
     INSPECTION_TIMEOUT_DNF: 17,
@@ -125,6 +125,7 @@ const APP_CONFIG = {
         THEME: 'cubeTimerTheme',
         LANGUAGE: 'cubeTimerLanguage',
         RECORDS: 'cube-timer-records',
-        SOUND_ENABLED: 'cube-timer-sound-enabled'
+        SOUND_ENABLED: 'cube-timer-sound-enabled',
+        OCTA_VIEW_MODES: 'cubeTimerOctaViewModes'
     }
 };

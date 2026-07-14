@@ -41,6 +41,7 @@
                 scrambleContent: document.getElementById('scrambleContent'),
                 copyBtn: document.getElementById('copyBtn'),
                 coordinateBtn: document.getElementById('coordinateBtn'),
+                octaViewToggleBtn: document.getElementById('octaViewToggleBtn'),
 
                 // 统计相关
                 currentTime: document.getElementById('currentTime'),
@@ -119,8 +120,12 @@
             cache.copyBtn.setAttribute('aria-label', t('copy'));
         }
 
-        // 更新坐标按钮
+        // 更新坐标与八面体视图切换按钮
         if (cache.coordinateBtn) cache.coordinateBtn.textContent = t('coordinate');
+        if (cache.octaViewToggleBtn) {
+            cache.octaViewToggleBtn.textContent = t('switchScrambleView');
+            cache.octaViewToggleBtn.title = t('switchScrambleView');
+        }
 
         // 更新统计区域标题
         const currentStatsTitle = document.querySelector('.current-stats-card .stats-card-title');
@@ -479,6 +484,103 @@
         getContainer() {
             return this.container;
         }
+    }
+
+    // ===== 八面体 2D 剖开视图辅助 =====
+    const OCTA_VIEW_MODES = {
+        FRONT_BACK: 'frontBack',
+        LEFT_RIGHT: 'leftRight'
+    };
+
+    const OCTA_CUBE_TYPES = new Set(['octahedron', 'cornerOcta', 'twinOctahedron']);
+
+    const OCTA_LOCAL_VERTEX_MAP = {
+        octahedron: {
+            top4: ['R', 'F', 'U'], top3: ['L', 'F', 'U'],
+            bottom3: ['L', 'F', 'D'], bottom4: ['R', 'F', 'D'],
+            top2: ['L', 'B', 'U'], top1: ['R', 'B', 'U'],
+            bottom1: ['R', 'B', 'D'], bottom2: ['L', 'B', 'D']
+        },
+        alternating: {
+            top4: ['R', 'F', 'U'], top3: ['F', 'L', 'U'],
+            bottom3: ['L', 'F', 'D'], bottom4: ['F', 'R', 'D'],
+            top2: ['L', 'B', 'U'], top1: ['B', 'R', 'U'],
+            bottom1: ['R', 'B', 'D'], bottom2: ['B', 'L', 'D']
+        }
+    };
+
+    function createTriangleTransform(source, destination) {
+        const [s0, s1, s2] = source;
+        const [d0, d1, d2] = destination;
+        const ux = s1[0] - s0[0];
+        const uy = s1[1] - s0[1];
+        const vx = s2[0] - s0[0];
+        const vy = s2[1] - s0[1];
+        const det = ux * vy - vx * uy;
+        if (Math.abs(det) < 1e-9) return '';
+
+        const Ux = d1[0] - d0[0];
+        const Uy = d1[1] - d0[1];
+        const Vx = d2[0] - d0[0];
+        const Vy = d2[1] - d0[1];
+        const a = (Ux * vy - Vx * uy) / det;
+        const b = (Uy * vy - Vy * uy) / det;
+        const c = (-Ux * vx + Vx * ux) / det;
+        const d = (-Uy * vx + Vy * ux) / det;
+        const e = d0[0] - a * s0[0] - c * s0[1];
+        const f = d0[1] - b * s0[0] - d * s0[1];
+        return `matrix(${a} ${b} ${c} ${d} ${e} ${f})`;
+    }
+
+    function getFrontBackDestination(faceKey, localVertexMap, layout) {
+        const isFront = ['top4', 'top3', 'bottom3', 'bottom4'].includes(faceKey);
+        const center = isFront ? layout.frontCenter : layout.backCenter;
+        const pointMap = isFront ? {
+            F: center,
+            U: [center[0], center[1] - layout.radius],
+            D: [center[0], center[1] + layout.radius],
+            L: [center[0] - layout.radius, center[1]],
+            R: [center[0] + layout.radius, center[1]]
+        } : {
+            B: center,
+            U: [center[0], center[1] - layout.radius],
+            D: [center[0], center[1] + layout.radius],
+            // 从后方观察时，R 位于画面左侧，L 位于画面右侧。
+            R: [center[0] - layout.radius, center[1]],
+            L: [center[0] + layout.radius, center[1]]
+        };
+        let destination = localVertexMap[faceKey].map(vertex => pointMap[vertex]);
+
+        const rotation = isFront
+            ? (layout.frontRotation ?? layout.rotation ?? 0)
+            : (layout.backRotation ?? layout.rotation ?? 0);
+        if (rotation) {
+            const cos = Math.cos(rotation);
+            const sin = Math.sin(rotation);
+            destination = destination.map(([x, y]) => {
+                const dx = x - center[0];
+                const dy = y - center[1];
+                return [
+                    center[0] + dx * cos - dy * sin,
+                    center[1] + dx * sin + dy * cos
+                ];
+            });
+        }
+
+        // 每个三角面围绕自身重心轻微缩小，形成真实可见的分面间隙。
+        const faceScale = layout.faceScale ?? 1;
+        if (faceScale < 1) {
+            const centroid = destination.reduce(
+                (sum, point) => [sum[0] + point[0] / 3, sum[1] + point[1] / 3],
+                [0, 0]
+            );
+            destination = destination.map(point => [
+                centroid[0] + (point[0] - centroid[0]) * faceScale,
+                centroid[1] + (point[1] - centroid[1]) * faceScale
+            ]);
+        }
+
+        return destination;
     }
 
     // ===== 转角三阶魔方核心数据结构 =====
@@ -1343,32 +1445,22 @@
             const f = this.faces;
             let temp;
 
-            // III1 → I2 → VI3 → III1
-            temp = f.top3[0]; f.top3[0] = f.bottom2[2]; f.bottom2[2] = f.top1[1]; f.top1[1] = temp;
-            // VII2 → IV1 → V3 → VII2
-            temp = f.bottom3[1]; f.bottom3[1] = f.bottom1[2]; f.bottom1[2] = f.top4[0]; f.top4[0] = temp;
-            // VII3 → IV2 → V1 → VII3
-            temp = f.bottom3[2]; f.bottom3[2] = f.bottom1[0]; f.bottom1[0] = f.top4[1]; f.top4[1] = temp;
-            // VII4 → IV4 → V4 → VII4
-            temp = f.bottom3[3]; f.bottom3[3] = f.bottom1[3]; f.bottom1[3] = f.top4[3]; f.top4[3] = temp;
-            // VIII1 → VIII2 → VIII3 → VIII1
-            temp = f.bottom4[0]; f.bottom4[0] = f.bottom4[2]; f.bottom4[2] = f.bottom4[1]; f.bottom4[1] = temp;
+            temp = f.bottom3[1]; f.bottom3[1] = f.bottom1[0]; f.bottom1[0] = f.top2[2]; f.top2[2] = temp;
+            temp = f.bottom4[0]; f.bottom4[0] = f.top1[1]; f.top1[1] = f.top3[2]; f.top3[2] = temp;
+            temp = f.bottom4[1]; f.bottom4[1] = f.top1[2]; f.top1[2] = f.top3[0]; f.top3[0] = temp;
+            temp = f.bottom4[3]; f.bottom4[3] = f.top1[3]; f.top1[3] = f.top3[3]; f.top3[3] = temp;
+            temp = f.top4[0]; f.top4[0] = f.top4[2]; f.top4[2] = f.top4[1]; f.top4[1] = temp;
         }
 
         rotateF() {
             const f = this.faces;
             let temp;
 
-            // IV2 → V3 → II1 → IV2
-            temp = f.top4[1]; f.top4[1] = f.top2[0]; f.top2[0] = f.bottom1[2]; f.bottom1[2] = temp;
-            // VIII1 → VI3 → III2 → VIII1
-            temp = f.bottom4[0]; f.bottom4[0] = f.top3[1]; f.top3[1] = f.bottom2[2]; f.bottom2[2] = temp;
-            // VIII3 → VI2 → III1 → VIII3
-            temp = f.bottom4[2]; f.bottom4[2] = f.top3[0]; f.top3[0] = f.bottom2[1]; f.bottom2[1] = temp;
-            // VIII4 → VI4 → III4 → VIII4
-            temp = f.bottom4[3]; f.bottom4[3] = f.top3[3]; f.top3[3] = f.bottom2[3]; f.bottom2[3] = temp;
-            // VII1 → VII2 → VII3 → VII1
-            temp = f.bottom3[0]; f.bottom3[0] = f.bottom3[2]; f.bottom3[2] = f.bottom3[1]; f.bottom3[1] = temp;
+            temp = f.top3[0]; f.top3[0] = f.bottom2[2]; f.bottom2[2] = f.top1[1]; f.top1[1] = temp;
+            temp = f.bottom3[1]; f.bottom3[1] = f.bottom1[2]; f.bottom1[2] = f.top4[0]; f.top4[0] = temp;
+            temp = f.bottom3[2]; f.bottom3[2] = f.bottom1[0]; f.bottom1[0] = f.top4[1]; f.top4[1] = temp;
+            temp = f.bottom3[3]; f.bottom3[3] = f.bottom1[3]; f.bottom1[3] = f.top4[3]; f.top4[3] = temp;
+            temp = f.bottom4[0]; f.bottom4[0] = f.bottom4[2]; f.bottom4[2] = f.bottom4[1]; f.bottom4[1] = temp;
         }
 
         rotateU() {
@@ -1391,16 +1483,11 @@
             const f = this.faces;
             let temp;
 
-            // III2 → VIII3 → I1 → III2
-            temp = f.top3[1]; f.top3[1] = f.top1[0]; f.top1[0] = f.bottom4[2]; f.bottom4[2] = temp;
-            // VII1 → V3 → II2 → VII1
-            temp = f.bottom3[0]; f.bottom3[0] = f.top2[1]; f.top2[1] = f.bottom1[2]; f.bottom1[2] = temp;
-            // VII3 → V2 → II1 → VII3
-            temp = f.bottom3[2]; f.bottom3[2] = f.top2[0]; f.top2[0] = f.bottom1[1]; f.bottom1[1] = temp;
-            // VII4 → V4 → II4 → VII4
-            temp = f.bottom3[3]; f.bottom3[3] = f.top2[3]; f.top2[3] = f.bottom1[3]; f.bottom1[3] = temp;
-            // VI1 → VI2 → VI3 → VI1
-            temp = f.bottom2[0]; f.bottom2[0] = f.bottom2[2]; f.bottom2[2] = f.bottom2[1]; f.bottom2[1] = temp;
+            temp = f.top4[1]; f.top4[1] = f.top2[0]; f.top2[0] = f.bottom1[2]; f.bottom1[2] = temp;
+            temp = f.bottom4[0]; f.bottom4[0] = f.top3[1]; f.top3[1] = f.bottom2[2]; f.bottom2[2] = temp;
+            temp = f.bottom4[2]; f.bottom4[2] = f.top3[0]; f.top3[0] = f.bottom2[1]; f.bottom2[1] = temp;
+            temp = f.bottom4[3]; f.bottom4[3] = f.top3[3]; f.top3[3] = f.bottom2[3]; f.bottom2[3] = temp;
+            temp = f.bottom3[0]; f.bottom3[0] = f.bottom3[2]; f.bottom3[2] = f.bottom3[1]; f.bottom3[1] = temp;
         }
 
         scramble(moves = 20) {
@@ -2578,6 +2665,18 @@
             this.faceKeys = ['top1', 'top2', 'top3', 'top4', 'bottom1', 'bottom2', 'bottom3', 'bottom4'];
             this.pathCache = new Map();  // 缓存路径元素
             this.isInitialized = false;
+            this.viewMode = OCTA_VIEW_MODES.FRONT_BACK;
+        }
+
+        setViewMode(mode) {
+            const nextMode = mode === OCTA_VIEW_MODES.LEFT_RIGHT
+                ? OCTA_VIEW_MODES.LEFT_RIGHT
+                : OCTA_VIEW_MODES.FRONT_BACK;
+            if (this.viewMode !== nextMode) {
+                this.viewMode = nextMode;
+                this.isInitialized = false;
+                this.pathCache.clear();
+            }
         }
 
         render(model) {
@@ -2654,6 +2753,9 @@
             }
 
             const adjustedPoints = projectedPoints.map(p => [p[0] + 150, p[1] + 150]);
+            this.applyViewTransform(faceGroup, faceKey, [
+                adjustedPoints[0], adjustedPoints[1], adjustedPoints[2]
+            ]);
             let peripheralIndex = 0;
 
             quads.forEach((quad, index) => {
@@ -2681,6 +2783,26 @@
             if (paths) {
                 paths.push(trianglePath);  // 同时添加到缓存
             }
+        }
+
+        applyViewTransform(faceGroup, faceKey, sourceTriangle) {
+            if (this.viewMode === OCTA_VIEW_MODES.FRONT_BACK) {
+                const destination = getFrontBackDestination(
+                    faceKey,
+                    OCTA_LOCAL_VERTEX_MAP.octahedron,
+                    { frontCenter: [660, 400], backCenter: [1340, 400], radius: 325, faceScale: 0.96 }
+                );
+                faceGroup.setAttribute('transform', createTriangleTransform(sourceTriangle, destination));
+                return;
+            }
+
+            const leftRightTransforms = {
+                top2: 'translate(100, 0)', bottom2: 'translate(100, 500)',
+                top3: 'translate(600, 0)', bottom3: 'translate(600, 500)',
+                top4: 'translate(1100, 0)', bottom4: 'translate(1100, 500)',
+                top1: 'translate(1600, 0)', bottom1: 'translate(1600, 500)'
+            };
+            faceGroup.setAttribute('transform', leftRightTransforms[faceKey] || '');
         }
 
         colorToHex(color) {
@@ -2718,6 +2840,18 @@
             this.faceKeys = ['top1', 'top2', 'top3', 'top4', 'bottom1', 'bottom2', 'bottom3', 'bottom4'];
             this.pathCache = new Map();  // 缓存路径元素
             this.isInitialized = false;
+            this.viewMode = OCTA_VIEW_MODES.FRONT_BACK;
+        }
+
+        setViewMode(mode) {
+            const nextMode = mode === OCTA_VIEW_MODES.LEFT_RIGHT
+                ? OCTA_VIEW_MODES.LEFT_RIGHT
+                : OCTA_VIEW_MODES.FRONT_BACK;
+            if (this.viewMode !== nextMode) {
+                this.viewMode = nextMode;
+                this.isInitialized = false;
+                this.pathCache.clear();
+            }
         }
 
         render(model) {
@@ -2791,6 +2925,10 @@
                 return [x + offsetX, y + offsetY];
             });
             
+            this.applyViewTransform(faceGroup, faceKey, [
+                adjustedPoints[0], adjustedPoints[3], adjustedPoints[9]
+            ]);
+
             triangles.forEach((triangle, index) => {
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 const [p1, p2, p3] = triangle;
@@ -2805,6 +2943,19 @@
                     paths.push(path);  // 同时添加到缓存
                 }
             });
+        }
+
+        applyViewTransform(faceGroup, faceKey, sourceTriangle) {
+            if (this.viewMode === OCTA_VIEW_MODES.FRONT_BACK) {
+                const destination = getFrontBackDestination(
+                    faceKey,
+                    OCTA_LOCAL_VERTEX_MAP.alternating,
+                    { frontCenter: [660, 400], backCenter: [1340, 400], radius: 325, faceScale: 0.96 }
+                );
+                faceGroup.setAttribute('transform', createTriangleTransform(sourceTriangle, destination));
+            } else {
+                faceGroup.removeAttribute('transform');
+            }
         }
 
         colorToHex(color) {
@@ -2872,6 +3023,18 @@
             this.faceKeys = ['top1', 'top2', 'top3', 'top4', 'bottom1', 'bottom2', 'bottom3', 'bottom4'];
             this.pathCache = new Map();  // 缓存路径元素
             this.isInitialized = false;
+            this.viewMode = OCTA_VIEW_MODES.FRONT_BACK;
+        }
+
+        setViewMode(mode) {
+            const nextMode = mode === OCTA_VIEW_MODES.LEFT_RIGHT
+                ? OCTA_VIEW_MODES.LEFT_RIGHT
+                : OCTA_VIEW_MODES.FRONT_BACK;
+            if (this.viewMode !== nextMode) {
+                this.viewMode = nextMode;
+                this.isInitialized = false;
+                this.pathCache.clear();
+            }
         }
 
         render(model) {
@@ -2996,6 +3159,10 @@
                 return [x + offsetX, y + offsetY];
             });
             
+            this.applyViewTransform(faceGroup, faceKey, [
+                adjustedPoints[0], adjustedPoints[1], adjustedPoints[2]
+            ]);
+
                         // 绘制4个三角形
             
             
@@ -3076,6 +3243,19 @@
             
                     }
         
+        applyViewTransform(faceGroup, faceKey, sourceTriangle) {
+            if (this.viewMode === OCTA_VIEW_MODES.FRONT_BACK) {
+                const destination = getFrontBackDestination(
+                    faceKey,
+                    OCTA_LOCAL_VERTEX_MAP.alternating,
+                    { frontCenter: [400, 300], backCenter: [800, 300], radius: 260, frontRotation: Math.PI / 4, backRotation: -Math.PI / 4, faceScale: 0.96 }
+                );
+                faceGroup.setAttribute('transform', createTriangleTransform(sourceTriangle, destination));
+            } else {
+                faceGroup.removeAttribute('transform');
+            }
+        }
+
         colorToHex(color) {
             // 将Three.js颜色转换为十六进制
             return '#' + color.toString(16).padStart(6, '0');
@@ -3521,7 +3701,7 @@
             this.dragState = { active: false, x: 0, y: 0 };
             // 统一采用右手坐标系：+Y 为上，+Z 为前，摄像机位于 +Z。
             // 正的 pitch 才会在默认视角中看到顶面；原来的负值会使八面体显示底面。
-            this.rotation = { yaw: -Math.PI / 4, pitch: 0.55 };
+            this.rotation = { yaw: -Math.PI / 4, pitch: 0.55, roll: 0 };
             this.cornerFaceRenderer = new CornerViewRenderer(null);
             this.octahedronFaceKeys = ['top1', 'top2', 'top3', 'top4', 'bottom1', 'bottom2', 'bottom3', 'bottom4'];
             this.setCanvas(canvas);
@@ -3554,9 +3734,15 @@
                 const dy = event.clientY - this.dragState.y;
                 this.dragState.x = event.clientX;
                 this.dragState.y = event.clientY;
-                const yawDelta = dx * 0.01;
-                const pitchDelta = dy * 0.01;
-                // 所有模型共用同一套世界坐标，不再按模型类型反转拖动方向。
+                // 将屏幕拖动方向按 roll 反变换回 yaw/pitch 坐标。
+                // 否则带 45° roll 的二阶转面八面体会出现“横拖却斜着转”的现象。
+                const roll = this.rotation.roll || 0;
+                const cosRoll = Math.cos(roll);
+                const sinRoll = Math.sin(roll);
+                const unrolledDx = dx * cosRoll - dy * sinRoll;
+                const unrolledDy = dx * sinRoll + dy * cosRoll;
+                const yawDelta = unrolledDx * 0.01;
+                const pitchDelta = unrolledDy * 0.01;
                 this.rotation.yaw += yawDelta;
                 this.rotation.pitch = Math.max(-1.2, Math.min(1.2, this.rotation.pitch + pitchDelta));
                 this.render();
@@ -3586,19 +3772,15 @@
 
         resetViewForCubeType(cubeType = this.currentCubeType) {
             if (cubeType === 'twinOctahedron') {
-                // 二阶转面八面体：从“左、下、前”三个方向等角观察。
-                // 初始可见面为：上方紫色 top3、中央绿色 bottom3、
-                // 左侧黄色 bottom2、右侧红色 bottom4。
-                this.rotation = {
-                    yaw: Math.PI / 4,
-                    pitch: -Math.asin(1 / Math.sqrt(3))
-                };
+                // 二阶转面八面体正对 F 顶点，再绕视线反向旋转 45°：
+                // 紫色在上、绿色在左、白色在右、红色在下。
+                this.rotation = { yaw: 0, pitch: 0, roll: -Math.PI / 4 };
             } else if (['octahedron', 'cornerOcta'].includes(cubeType)) {
                 // 另外两种八面体继续正对 F 顶点。
-                this.rotation = { yaw: 0, pitch: 0 };
+                this.rotation = { yaw: 0, pitch: 0, roll: 0 };
             } else {
                 // 立方体类仍使用可同时看到 U/F/R 的默认角度。
-                this.rotation = { yaw: -Math.PI / 4, pitch: 0.55 };
+                this.rotation = { yaw: -Math.PI / 4, pitch: 0.55, roll: 0 };
             }
         }
 
@@ -3961,9 +4143,12 @@
         }
 
         getOctahedronFaceVertices() {
+            // 二阶转面八面体正视时需要严格等长的六个轴顶点，
+            // 否则 roll 45° 后外轮廓会轻微歪斜而不像正方形。
+            const verticalRadius = this.currentCubeType === 'twinOctahedron' ? 1.05 : 1.15;
             const v = {
-                T: { x: 0, y: 1.15, z: 0 },   // U 顶点
-                D: { x: 0, y: -1.15, z: 0 },  // D 顶点
+                T: { x: 0, y: verticalRadius, z: 0 },   // U 顶点
+                D: { x: 0, y: -verticalRadius, z: 0 },  // D 顶点
                 R: { x: 1.05, y: 0, z: 0 },
                 F: { x: 0, y: 0, z: 1.05 },
                 L: { x: -1.05, y: 0, z: 0 },
@@ -4463,7 +4648,13 @@
             const y2 = point.y * cosX - z1 * sinX;
             const z2 = point.y * sinX + z1 * cosX;
 
-            return { x: x1, y: y2, z: z2 };
+            const roll = this.rotation.roll || 0;
+            const cosZ = Math.cos(roll);
+            const sinZ = Math.sin(roll);
+            const x3 = x1 * cosZ - y2 * sinZ;
+            const y3 = x1 * sinZ + y2 * cosZ;
+
+            return { x: x3, y: y3, z: z2 };
         }
 
         projectPoint(point, scale, centerX, centerY) {
@@ -4496,6 +4687,12 @@
                 scrambleHistory: [],
                 currentHistoryIndex: -1,
                 soundEnabled: true,
+                // 三种八面体分别保存 2D 剖开方式，默认使用前后剖开。
+                octaViewModes: {
+                    octahedron: OCTA_VIEW_MODES.FRONT_BACK,
+                    cornerOcta: OCTA_VIEW_MODES.FRONT_BACK,
+                    twinOctahedron: OCTA_VIEW_MODES.FRONT_BACK
+                },
                 // 统一的时间记录结构（按魔方类型分组）
                 times: {
                     corner: [],
@@ -4570,6 +4767,7 @@
             this.setupEventListeners();
             this.restoreTheme();
             this.restoreSoundSettings();
+            this.restoreOctaViewModes();
             this.restoreTimeRecords();
             // 使用恢复的魔方类型，如果没有恢复到则使用默认的'corner'
             const cubeType = this.state.currentCubeType || 'corner';
@@ -4642,6 +4840,7 @@
             this.elements.nextScrambleBtn = getEl('nextScrambleBtn');
             this.elements.copyBtn = getEl('copyBtn');
             this.elements.coordinateBtn = getEl('coordinateBtn');
+            this.elements.octaViewToggleBtn = getEl('octaViewToggleBtn');
 
             // 主题切换按钮
             this.elements.themeToggleBtn = getEl('settingsBtn');
@@ -4724,6 +4923,9 @@
             this.elements.copyBtn.addEventListener('click', () => this.copyScramble());
             if (this.elements.coordinateBtn) {
                 this.elements.coordinateBtn.addEventListener('click', () => this.showCoordinateModal());
+            }
+            if (this.elements.octaViewToggleBtn) {
+                this.elements.octaViewToggleBtn.addEventListener('click', () => this.toggleOctaViewMode());
             }
 
             // 打乱控制选项事件
@@ -5388,6 +5590,62 @@
             }
         }
         
+        // ===== 八面体 2D 剖开视图管理 =====
+        restoreOctaViewModes() {
+            const defaults = {
+                octahedron: OCTA_VIEW_MODES.FRONT_BACK,
+                cornerOcta: OCTA_VIEW_MODES.FRONT_BACK,
+                twinOctahedron: OCTA_VIEW_MODES.FRONT_BACK
+            };
+            const saved = StorageHelper.getItem(APP_CONFIG.STORAGE_KEYS.OCTA_VIEW_MODES, {});
+            this.state.octaViewModes = { ...defaults };
+            Object.keys(defaults).forEach(type => {
+                if (saved?.[type] === OCTA_VIEW_MODES.LEFT_RIGHT || saved?.[type] === OCTA_VIEW_MODES.FRONT_BACK) {
+                    this.state.octaViewModes[type] = saved[type];
+                }
+            });
+        }
+
+        getOctaViewMode(cubeType = this.state.currentCubeType) {
+            return this.state.octaViewModes?.[cubeType] === OCTA_VIEW_MODES.LEFT_RIGHT
+                ? OCTA_VIEW_MODES.LEFT_RIGHT
+                : OCTA_VIEW_MODES.FRONT_BACK;
+        }
+
+        updateOctaViewToggleButton() {
+            const cubeType = this.state.currentCubeType;
+            const isOctahedron = OCTA_CUBE_TYPES.has(cubeType);
+            const displaySection = document.querySelector('.scramble-display-section');
+            displaySection?.classList.toggle('has-octa-view-toggle', isOctahedron);
+
+            if (!this.elements.octaViewToggleBtn) return;
+            this.elements.octaViewToggleBtn.textContent = t('switchScrambleView');
+            this.elements.octaViewToggleBtn.title = t('switchScrambleView');
+            this.elements.octaViewToggleBtn.dataset.currentMode = isOctahedron
+                ? this.getOctaViewMode(cubeType)
+                : '';
+            this.elements.octaViewToggleBtn.setAttribute('aria-hidden', isOctahedron ? 'false' : 'true');
+        }
+
+        toggleOctaViewMode() {
+            const cubeType = this.state.currentCubeType;
+            if (!OCTA_CUBE_TYPES.has(cubeType)) return;
+
+            const current = this.getOctaViewMode(cubeType);
+            this.state.octaViewModes[cubeType] = current === OCTA_VIEW_MODES.FRONT_BACK
+                ? OCTA_VIEW_MODES.LEFT_RIGHT
+                : OCTA_VIEW_MODES.FRONT_BACK;
+            StorageHelper.setItem(APP_CONFIG.STORAGE_KEYS.OCTA_VIEW_MODES, this.state.octaViewModes);
+
+            this.updateOctaViewToggleButton();
+            this.updateCubePanelView();
+
+            const modal = document.getElementById('coordinateModal');
+            if (modal?.style.display === 'flex' && this.coordinateCubeType === cubeType && this.coordinateCube) {
+                this.renderCoordinateView(cubeType, this.coordinateCube);
+            }
+        }
+
         // ===== 魔方类型切换管理 =====
         
         
@@ -5480,6 +5738,7 @@
                     // 统一控制所有视图的显示状态
         
                     this.updateViewVisibility();
+                    this.updateOctaViewToggleButton();
         
         
         
@@ -5671,6 +5930,9 @@
             const renderer = this.viewRenderers.get(this.state.currentCubeType);
             const model = this.cubeInstances.get(this.state.currentCubeType);
             if (renderer && model) {
+                if (typeof renderer.setViewMode === 'function' && OCTA_CUBE_TYPES.has(this.state.currentCubeType)) {
+                    renderer.setViewMode(this.getOctaViewMode(this.state.currentCubeType));
+                }
                 renderer.render(model);
             }
         }
@@ -6551,6 +6813,9 @@
                 
                 // 使用渲染器渲染 - 会使用克隆的face-group
                 const renderer = new cubeInfo.viewRenderer(null);
+                if (typeof renderer.setViewMode === 'function' && OCTA_CUBE_TYPES.has(cubeType)) {
+                    renderer.setViewMode(this.getOctaViewMode(cubeType));
+                }
                 renderer.renderToCoordinateSVG(svgContainer, cube, this.getCoordinateSVGConfig(cubeType));
             }
 

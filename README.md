@@ -4,7 +4,7 @@
 
 ![项目状态](https://img.shields.io/badge/状态-活跃-green)
 ![License](https://img.shields.io/badge/License-MIT-blue)
-![版本](https://img.shields.io/badge/版本-v1.2.0-brightgreen)
+![版本](https://img.shields.io/badge/版本-v1.2.1-brightgreen)
 ![浏览器兼容](https://img.shields.io/badge/浏览器-Chrome%20%7C%20Edge%20%7C%20Firefox%20%7C%20Safari-orange)
 
 一个功能强大、界面美观的多魔方类型计时器，支持多种异形魔方计时和统计。
@@ -133,6 +133,8 @@ dianshengtimer/
 ## 🏷️ 版本自动管控
 
 项目以根目录的 `version.json` 作为**唯一版本源**。版本脚本会自动同步以下位置：
+
+修改 `version.json` 后，执行 `npm run version:sync` 会立即同步；如果直接提交，pre-commit 会在提交前自动同步。仅保存文件但不执行命令/提交时，不会触发同步。
 
 - `js/constants.js` 中的 `APP_CONFIG.APP_VERSION`
 - `index.html` 中全部本地 CSS/JS 的 `?v=` 缓存参数
@@ -416,6 +418,7 @@ SOFTWARE.
 #### 🧊 2D / 伪3D 转动方式视图
 
 - ✨ “转动方式”弹窗升级为 2D 展开图与可拖动伪 3D 模型并排显示
+- 🔀 三种八面体新增“切换打乱视图”，可在前后剖开与原左右剖开之间切换；各类型独立记忆，默认前后剖开
 - 🧭 为立方体、双子八面体、转角八面体和二阶转面八面体配置一致的空间坐标、朝外法线及标准初始观察角度
 - 🎨 修复立方体左右面互换、部分面额外旋转 180°、八面体面位置及三角纹理镜像等问题
 - 💡 调整伪 3D 光照算法，取消最亮面仍强制覆盖 20% 黑色的问题，使颜色更接近 2D 视图
