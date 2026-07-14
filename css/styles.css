@@ -2837,3 +2837,77 @@
         font-size: 11px;
     }
 }
+
+/* ===== 手机端打乱公式操作栏：公式独占一行，按钮置于下一行 ===== */
+@media (max-width: 768px) {
+    .scramble-display-section,
+    .scramble-display-section.has-octa-view-toggle {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto auto;
+        grid-template-rows: auto 36px;
+        column-gap: 6px;
+        row-gap: 7px;
+        align-items: center;
+        width: 100%;
+        min-height: 0;
+        padding: 8px 0 10px;
+        padding-right: 0;
+        overflow: visible;
+    }
+
+    .scramble-display-section .scramble-text {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+    }
+
+    .scramble-display-section .copy-scramble-btn,
+    .scramble-display-section .coordinate-scramble-btn,
+    .scramble-display-section .octa-view-toggle-btn {
+        position: static;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        left: auto;
+        margin: 0;
+        align-self: center;
+    }
+
+    .scramble-display-section .copy-scramble-btn {
+        grid-column: 2;
+        grid-row: 2;
+        width: 36px;
+        height: 32px;
+    }
+
+    .scramble-display-section .coordinate-scramble-btn {
+        grid-column: 3;
+        grid-row: 2;
+        height: 32px;
+        padding: 0 10px;
+        font-size: 11px;
+    }
+
+    .scramble-display-section .octa-view-toggle-btn {
+        grid-column: 4;
+        grid-row: 2;
+        height: 32px;
+        padding: 0 10px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 380px) {
+    .scramble-display-section,
+    .scramble-display-section.has-octa-view-toggle {
+        column-gap: 4px;
+    }
+
+    .scramble-display-section .coordinate-scramble-btn,
+    .scramble-display-section .octa-view-toggle-btn {
+        padding: 0 7px;
+        font-size: 10px;
+    }
+}

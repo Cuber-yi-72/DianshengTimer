@@ -4,7 +4,7 @@
 
 ![项目状态](https://img.shields.io/badge/状态-活跃-green)
 ![License](https://img.shields.io/badge/License-MIT-blue)
-![版本](https://img.shields.io/badge/版本-v1.2.1-brightgreen)
+![版本](https://img.shields.io/badge/版本-v1.2.2-brightgreen)
 ![浏览器兼容](https://img.shields.io/badge/浏览器-Chrome%20%7C%20Edge%20%7C%20Firefox%20%7C%20Safari-orange)
 
 一个功能强大、界面美观的多魔方类型计时器，支持多种异形魔方计时和统计。
